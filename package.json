@@ -1,0 +1,25 @@
+{
+  "name": "doginal-indexer",
+  "version": "1.0.0",
+  "description": "A doginal Indexing lib by ordifind.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test",
+    "dev": "tsc && node ./build/index.js"
+  },
+  "keywords": [
+    "indexer",
+    "doginals",
+    "ordinals"
+  ],
+  "author": "lazo",
+  "license": "ISC",
+  "dependencies": {
+    "bitcoin-core": "^4.1.0",
+    "bitcoinjs-lib": "^6.1.5",
+    "dotenv": "^16.4.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19"
+  }
+}
