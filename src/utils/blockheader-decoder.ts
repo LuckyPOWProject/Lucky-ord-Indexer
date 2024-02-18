@@ -93,15 +93,18 @@ class BlockHeaderDecoder {
         transaction.transactionBytes
       );
 
-      const transactionObj = bitcoin.Transaction.fromBuffer(TransactionHex_);
+      const id = bitcoin.crypto
+        .hash256(TransactionHex_)
+        .reverse()
+        .toString("hex");
 
       transactions.push({
         inputs: transaction.inputs,
         output: transaction.output,
         version: transaction.version,
         hex: TransactionHex_.toString("hex"),
-        txid: transactionObj.getHash().reverse().toString("hex"),
-        isCoinBase: transactionObj.isCoinbase(),
+        txid: id,
+        isCoinBase: i === 0 ? true : false, // 0 is coinbase
       });
 
       transactionStartIndex += transaction.transactionBytes;
