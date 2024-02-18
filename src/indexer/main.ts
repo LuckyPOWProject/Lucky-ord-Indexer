@@ -15,7 +15,7 @@ const DoginalsIndexer = async () => {
 
   await DogecoinCLI.connect();
 
-  let startBlock = 4609788;
+  let startBlock = 4609853;
   while (1) {
     const BlockHex = await DogecoinCLI.getBlockHash(startBlock);
 

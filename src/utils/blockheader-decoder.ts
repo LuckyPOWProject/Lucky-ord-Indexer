@@ -68,7 +68,7 @@ class BlockHeaderDecoder {
       BytesUsed
     );
 
-    transactionStartIndex += this.byte1;
+    transactionStartIndex += BytesUsed;
 
     const transactions: Transaction[] = [];
 
@@ -76,8 +76,8 @@ class BlockHeaderDecoder {
       const NewTransactionBuff = transactionStartBuff.slice(
         transactionStartIndex
       );
-      const transaction = this.decodeTransaction(NewTransactionBuff);
 
+      const transaction = this.decodeTransaction(NewTransactionBuff);
       if (
         !transaction.inputs?.length ||
         !transaction.output?.length ||
