@@ -32,7 +32,7 @@ const DoginalsIndexer = async () => {
 
     //we get new Inscription Number
 
-    CurrentInscriptionNumber += inscriptions;
+    CurrentInscriptionNumber = inscriptions;
     startBlock += 1;
 
     console.log(`scanned block:- ${startBlock}`);
