@@ -48,34 +48,54 @@ const inscriptionFetchandStore = async (
           const IsremaingChunkPushSameBlock =
             inscriptionInCompleteCache[inscriptionInInputs.previousHash];
 
+          let newDataHandler;
+          let dataFromDB = false;
+
           if (
             !IsremaingChunkPushSameBlock ||
             !IsremaingChunkPushSameBlock.inscription.data
-          )
-            continue;
+          ) {
+            //Lets Check if they are in Database
 
-          const newData =
-            IsremaingChunkPushSameBlock.inscription.data + inscription_data;
+            const isRemaininginDB =
+              await inscriptionQuery.getPendingInscriptions(
+                inscriptionInInputs.previousHash
+              );
 
-          delete inscriptionInCompleteCache[inscriptionInInputs.previousHash];
+            if (!isRemaininginDB) continue;
 
-          pendinginscriptions = pendinginscriptions.filter(
-            (a) => a.location !== inscriptionInInputs.previousHash
-          );
+            dataFromDB = true;
+            newDataHandler = isRemaininginDB;
+          } else {
+            newDataHandler = IsremaingChunkPushSameBlock;
+          }
+
+          const newData = newDataHandler.inscription.data + inscription_data;
+
+          if (dataFromDB) {
+            await inscriptionQuery.DeletePendingInscriptions(
+              inscriptionInInputs.previousHash
+            );
+          } else {
+            delete inscriptionInCompleteCache[inscriptionInInputs.previousHash];
+
+            pendinginscriptions = pendinginscriptions.filter(
+              (a) => a.location !== inscriptionInInputs.previousHash
+            );
+          }
 
           if (!inscriptionInInputs.isComplete) {
             inscriptionInCompleteCache[Location] = {
               inscription: {
-                contentType:
-                  IsremaingChunkPushSameBlock.inscription.contentType,
+                contentType: newDataHandler.inscription.contentType,
                 data: newData,
               },
-              index: IsremaingChunkPushSameBlock.index,
-              block: IsremaingChunkPushSameBlock.block,
-              time: IsremaingChunkPushSameBlock.time,
-              txid: IsremaingChunkPushSameBlock.txid,
+              index: newDataHandler.index,
+              block: newDataHandler.block,
+              time: newDataHandler.time,
+              txid: newDataHandler.txid,
               location: Location,
-              id: IsremaingChunkPushSameBlock.id,
+              id: newDataHandler.id,
             };
             pendinginscriptions.push(inscriptionInCompleteCache[Location]);
           } else {

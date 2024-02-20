@@ -30,6 +30,38 @@ const inscriptionQuery = {
       throw error;
     }
   },
+  getPendingInscriptions: async (location: string) => {
+    try {
+      const conn = await GetMongoConnection();
+      const db = conn.db(SystemConfig.database);
+      const collection = db.collection(
+        SystemConfig.collectionPendingInscription
+      );
+
+      const Query = { location: location };
+
+      const data = await collection.findOne(Query);
+
+      return data ? data : null;
+    } catch (error) {
+      throw error;
+    }
+  },
+  DeletePendingInscriptions: async (location: string) => {
+    try {
+      const conn = await GetMongoConnection();
+      const db = conn.db(SystemConfig.database);
+      const collection = db.collection(
+        SystemConfig.collectionPendingInscription
+      );
+
+      const Query = { location: location };
+
+      await collection.deleteOne(Query);
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default inscriptionQuery;

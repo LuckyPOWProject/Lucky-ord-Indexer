@@ -4,21 +4,31 @@ import { ProtocolTag } from "../shared/system/protocol";
 import { inscriptionDataTemp } from "../types/inscription-interface";
 import { ReverseHash } from "./address-utlis";
 
-const op_code_to_num = (opcode: number): number | undefined => {
-  if (opcode > 80 && opcode < 96) {
+const op_code_to_num = (opcode: number | Buffer): number | undefined => {
+  if (typeof opcode !== "number") {
+    if (opcode.length > 2) return undefined;
+
+    const code = opcode.reverse();
+
+    if (code.length === 1) return opcode[0];
+
+    if (code.length === 2) return opcode[0] * 255 + opcode[1];
+
+    return undefined;
+  }
+
+  if (opcode > 80 && opcode <= 96) {
     return opcode - 80;
   } else if (opcode === 0) {
     return 0;
-  } else if (opcode === 2 || opcode === 1) {
-    throw new Error("somethings should be done here !");
+  } else {
+    return undefined;
   }
-  return undefined;
 };
 
 const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
   try {
     const inscriptions: inscriptionDataTemp[] = [];
-
     inputs.map((e, index) => {
       const InputScript = Buffer.from(e.script, "hex");
 
@@ -33,8 +43,7 @@ const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
 
         //lets check if its a remaining chunks
 
-        const IsReamainingChunks = op_code_to_num(Number(Protocol));
-
+        const IsReamainingChunks = op_code_to_num(Protocol);
         if (IsReamainingChunks === undefined) return; //Not a Remaining Chunks
 
         const OrginalChunks: (Buffer | number)[] = [];
@@ -56,12 +65,14 @@ const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
         });
         return;
       } //not ordinals
+      const TotalDataInjectedOp = ScriptDecode?.shift();
 
-      const TotalDataInjectedOp = ScriptDecode?.shift()?.toString();
+      if (!TotalDataInjectedOp) return;
 
-      const DataPices = op_code_to_num(Number(TotalDataInjectedOp));
+      const DataPices = op_code_to_num(TotalDataInjectedOp);
 
       const contentType = ScriptDecode.shift()?.toString();
+      // console.log(ScriptDecode);
 
       const DoginalData = GetInscriptionFromChunk(
         Number(DataPices),
@@ -94,7 +105,10 @@ const GetInscriptionFromChunk = (
   let isComplete = true;
 
   while (remainingChunks) {
-    const numofDataRemain = op_code_to_num(Number(data.shift()));
+    const Data = data.shift();
+    if (!Data) break;
+
+    const numofDataRemain = op_code_to_num(Data);
     if (remainingChunks - 1 !== numofDataRemain) {
       isComplete = false;
 
