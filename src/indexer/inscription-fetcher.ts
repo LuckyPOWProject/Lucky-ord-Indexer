@@ -150,7 +150,7 @@ const inscriptionFetchandStore = async (
 
     if (pendinginscriptions.length !== 0) {
       DBQuery.push(
-        await inscriptionQuery.storeInscription(pendinginscriptions)
+        await inscriptionQuery.storePendingInscriptions(pendinginscriptions)
       );
     }
 
