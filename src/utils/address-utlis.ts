@@ -12,3 +12,6 @@ export const OutputScriptToAddress = (script: string) => {
     throw error;
   }
 };
+export const ReverseHash = (hash: string): string => {
+  return Buffer.from(hash, "hex").reverse().toString("hex");
+};

@@ -1,9 +1,7 @@
 import DogecoinCore from "../api/dogecoin-core-rpc";
 import SystemConfig from "../shared/system/config";
-import { inscriptionStoreModel } from "../types/inscription-interface";
-import { OutputScriptToAddress } from "../utils/address-utlis";
 import BlockHeaderDecoder from "../utils/blockheader-decoder";
-import DecodeInputScript from "../utils/decode-input-script";
+import inscriptionFetchandStore from "./inscription-fetcher";
 
 const DoginalsIndexer = async () => {
   const DogecoinCLI = new DogecoinCore({
@@ -15,7 +13,9 @@ const DoginalsIndexer = async () => {
 
   await DogecoinCLI.connect();
 
-  let startBlock = 4609900;
+  let startBlock = 4609723;
+  let CurrentInscriptionNumber = -1;
+
   while (1) {
     const BlockHex = await DogecoinCLI.getBlockHash(startBlock);
 
@@ -24,48 +24,18 @@ const DoginalsIndexer = async () => {
     const BlockDecoder = new BlockHeaderDecoder(BlockRawHex);
 
     const decodedBlock = BlockDecoder.decode();
-    if (!decodedBlock.transactions) throw new Error("Transaction not found");
 
-    const inscriptionData: inscriptionStoreModel[] = [];
+    const inscriptions = await inscriptionFetchandStore(
+      decodedBlock,
+      CurrentInscriptionNumber
+    );
 
-    decodedBlock.transactions.map((e, index) => {
-      const txid = e.txid;
-      const inputs = e.inputs;
-      const outputs = e.output;
-      if (e.isCoinBase) return;
-      //Now lets see if input contains inscriptions
+    //we get new Inscription Number
 
-      const inscriptionInInput = DecodeInputScript(inputs);
-
-      if (inscriptionInInput.length === 0) return;
-
-      const inscriptionOwner = OutputScriptToAddress(outputs[0].script);
-
-      inscriptionInInput.map((el) => {
-        const id = `${txid}i${el.index}`;
-        inscriptionData.push({
-          inscription: {
-            data: el.data,
-            isComplete: el.isComplete,
-            id: id,
-            index: el.index,
-            contentType: el.contentType,
-          },
-          inputs: e.inputs,
-          outputs: e.output,
-          block: startBlock,
-          time: decodedBlock.blockheader?.blocktime,
-          owner: inscriptionOwner,
-          txid: e.txid,
-          minter: inscriptionOwner,
-          index: index,
-        });
-      });
-    });
-
-    console.log(inscriptionData);
-    console.log(`scanned block `, startBlock);
+    CurrentInscriptionNumber += inscriptions;
     startBlock += 1;
+
+    console.log(`scanned block:- ${startBlock}`);
   }
 };
 
