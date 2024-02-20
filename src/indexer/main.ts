@@ -14,7 +14,7 @@ const DoginalsIndexer = async () => {
   await DogecoinCLI.connect();
 
   let startBlock = 4609723;
-  let CurrentInscriptionNumber = -1;
+  let CurrentInscriptionNumber = 0;
 
   while (1) {
     const BlockHex = await DogecoinCLI.getBlockHash(startBlock);
@@ -27,7 +27,7 @@ const DoginalsIndexer = async () => {
 
     const inscriptions = await inscriptionFetchandStore(
       decodedBlock,
-      CurrentInscriptionNumber
+      CurrentInscriptionNumber === 0 ? -1 : CurrentInscriptionNumber
     );
 
     //we get new Inscription Number
