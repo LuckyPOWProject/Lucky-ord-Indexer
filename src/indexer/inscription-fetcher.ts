@@ -79,7 +79,7 @@ const inscriptionFetchandStore = async (
             };
             pendinginscriptions.push(inscriptionInCompleteCache[Location]);
           } else {
-            CurrentInscriptionNumber === 0 ? "" : (inscriptionNumber += 1);
+            inscriptionNumber += 1;
 
             inscriptionData.push({
               inscription: {
@@ -122,7 +122,7 @@ const inscriptionFetchandStore = async (
           continue;
         }
 
-        CurrentInscriptionNumber === 0 ? "" : (inscriptionNumber += 1);
+        inscriptionNumber += 1;
 
         inscriptionData.push({
           id: inscription_id,
