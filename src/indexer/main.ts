@@ -27,7 +27,7 @@ const DoginalsIndexer = async () => {
 
     const inscriptions = await inscriptionFetchandStore(
       decodedBlock,
-      CurrentInscriptionNumber === 0 ? -1 : CurrentInscriptionNumber
+      CurrentInscriptionNumber
     );
 
     //we get new Inscription Number
