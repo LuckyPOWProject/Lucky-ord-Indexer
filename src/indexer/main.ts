@@ -13,7 +13,7 @@ const DoginalsIndexer = async () => {
 
   await DogecoinCLI.connect();
 
-  let startBlock = 4610171;
+  let startBlock = 4609792;
   let CurrentInscriptionNumber = 0;
 
   while (1) {
@@ -29,8 +29,7 @@ const DoginalsIndexer = async () => {
       decodedBlock,
       CurrentInscriptionNumber
     );
-
-    //we get new Inscription Number
+    // we get new Inscription Number
     CurrentInscriptionNumber = inscriptions;
     startBlock += 1;
 

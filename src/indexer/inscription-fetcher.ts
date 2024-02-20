@@ -163,7 +163,6 @@ const inscriptionFetchandStore = async (
     }
 
     const DBQuery = [];
-
     if (inscriptionData.length !== 0) {
       DBQuery.push(await inscriptionQuery.storeInscription(inscriptionData));
     }

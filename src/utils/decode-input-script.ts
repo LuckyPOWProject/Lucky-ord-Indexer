@@ -44,7 +44,10 @@ const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
         //lets check if its a remaining chunks
 
         const IsReamainingChunks = op_code_to_num(Protocol);
+
         if (IsReamainingChunks === undefined) return; //Not a Remaining Chunks
+
+        if (ScriptDecode.length < 4) return;
 
         const OrginalChunks: (Buffer | number)[] = [];
 
@@ -106,9 +109,10 @@ const GetInscriptionFromChunk = (
 
   while (remainingChunks) {
     const Data = data.shift();
-    if (!Data) break;
+    if (Data === undefined) break;
 
     const numofDataRemain = op_code_to_num(Data);
+
     if (remainingChunks - 1 !== numofDataRemain) {
       isComplete = false;
 
