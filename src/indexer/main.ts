@@ -15,7 +15,7 @@ const DoginalsIndexer = async () => {
 
   await DogecoinCLI.connect();
 
-  let startBlock = 4610171;
+  let startBlock = 4609792;
   let maxScan = 12;
   let CurrentInscriptionNumber = 0;
 
@@ -64,8 +64,11 @@ const DoginalsIndexer = async () => {
       CurrentInscriptionNumber
     );
 
+    const BlockUntill = BlocksToScan[BlocksToScan.length - 1];
+
     CurrentInscriptionNumber = inscriptions;
-    startBlock += 1;
+
+    startBlock = BlockUntill + 1;
 
     console.log(`scanned block:- ${startBlock}`);
   }
