@@ -47,7 +47,7 @@ const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
 
         if (IsReamainingChunks === undefined) return; //Not a Remaining Chunks
 
-        if (ScriptDecode.length < 4) return;
+        if (ScriptDecode.length < 2) return;
 
         const OrginalChunks: (Buffer | number)[] = [];
 
@@ -91,6 +91,7 @@ const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
           IsremaingChunkPush: false,
         });
     });
+
     return inscriptions;
   } catch (error) {
     throw error;
