@@ -103,17 +103,16 @@ const inscriptionFetchandStore = async (
 
             inscriptionData.push({
               inscription: {
-                contentType:
-                  IsremaingChunkPushSameBlock.inscription.contentType,
+                contentType: newDataHandler.inscription.contentType,
                 data: newData,
               },
               inscriptionNumber: inscriptionNumber,
-              index: IsremaingChunkPushSameBlock.index,
-              block: IsremaingChunkPushSameBlock.block,
-              time: IsremaingChunkPushSameBlock.time,
-              id: IsremaingChunkPushSameBlock.id,
+              index: newDataHandler.index,
+              block: newDataHandler.block,
+              time: newDataHandler.time,
+              id: newDataHandler.id,
               location: Location,
-              txid: IsremaingChunkPushSameBlock.txid,
+              txid: newDataHandler.txid,
               owner: inscriptionMinter,
               minter: inscriptionMinter,
             });
