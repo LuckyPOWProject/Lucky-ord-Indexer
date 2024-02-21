@@ -65,7 +65,18 @@ export interface Transaction {
 }
 
 export interface Block {
+  number: number;
   blockheader?: BlockHeader;
   auxpow?: auxpow;
   transactions?: Transaction[];
+}
+
+export interface TransactionWithBlock {
+  blockNumber: number;
+  time: number;
+  index: number;
+  inputs: inputs[];
+  outputs: outputs[];
+  txid: string;
+  coinbase: boolean;
 }

@@ -1,5 +1,5 @@
 import inscriptionQuery from "../shared/database/query-inscription";
-import { Block } from "../types/dogecoin-interface";
+import { TransactionWithBlock } from "../types/dogecoin-interface";
 import {
   inscriptionIncomplete,
   inscriptionStoreModel,
@@ -8,7 +8,7 @@ import { OutputScriptToAddress } from "../utils/address-utlis";
 import DecodeInputScript from "../utils/decode-input-script";
 
 const inscriptionFetchandStore = async (
-  data: Block,
+  data: TransactionWithBlock[],
   CurrentInscriptionNumber: number
 ): Promise<number> => {
   let inscriptionNumber = CurrentInscriptionNumber;
@@ -21,21 +21,19 @@ const inscriptionFetchandStore = async (
 
     let pendinginscriptions: inscriptionIncomplete[] = [];
 
-    if (!data.transactions?.length) throw new Error("Transaction not found");
-
-    for (const [i, blockData] of data.transactions?.entries()) {
-      const DecodedInputData = DecodeInputScript(blockData.inputs);
+    for (const transactions of data) {
+      const DecodedInputData = DecodeInputScript(transactions.inputs);
 
       if (!DecodedInputData.length) continue;
 
-      const inscriptionOutput = blockData.output[0];
+      const inscriptionOutput = transactions.outputs[0];
 
       const inscriptionMinter = OutputScriptToAddress(inscriptionOutput.script);
 
-      const Location = `${blockData.txid}:${inscriptionOutput.index}`; //location is where inscription is stored
+      const Location = `${transactions.txid}:${inscriptionOutput.index}`; //location is where inscription is stored
 
       for (const inscriptionInInputs of DecodedInputData) {
-        const inscription_id = `${blockData.txid}i${inscriptionInInputs.index}`;
+        const inscription_id = `${transactions.txid}i${inscriptionInInputs.index}`;
 
         const inscription_contentType = inscriptionInInputs.contentType;
 
@@ -129,10 +127,10 @@ const inscriptionFetchandStore = async (
               contentType: inscription_contentType,
             },
             block: 0,
-            index: i,
-            time: data.blockheader?.blocktime || 0,
+            index: transactions.index,
+            time: transactions.time,
             location: Location,
-            txid: blockData.txid,
+            txid: transactions.txid,
             id: inscription_id,
           };
           pendinginscriptions.push(
@@ -150,10 +148,10 @@ const inscriptionFetchandStore = async (
             contentType: inscription_contentType,
             data: inscription_data,
           },
-          block: data.blockheader?.blocktime || 0,
-          time: data.blockheader?.blocktime || 0,
-          txid: blockData.txid,
-          index: i,
+          block: transactions.blockNumber,
+          time: transactions.time,
+          txid: transactions.txid,
+          index: transactions.index,
           location: Location,
           owner: inscriptionMinter,
           minter: inscriptionMinter,

@@ -35,8 +35,8 @@ class BlockHeaderDecoder {
     this.blockHexBuffer = BlockHexBuffer;
   }
 
-  decode() {
-    const Block: Block = {};
+  decode(number: number) {
+    const Block: Block = { number: number };
 
     const BlockHeaderInfo = this.getBlockHeader(this.blockHexBuffer);
 
