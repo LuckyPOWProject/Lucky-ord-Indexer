@@ -17,7 +17,7 @@ const DoginalsIndexer = async () => {
 
   await DogecoinCLI.connect();
 
-  let startBlock = 4609792;
+  let startBlock = 4610752;
   let maxScan = 12;
   let CurrentInscriptionNumber = 0;
 

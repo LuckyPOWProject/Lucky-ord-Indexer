@@ -49,7 +49,10 @@ const inscriptionTransferWork = async (
     const MatchedInscriptionLocation =
       await inscriptionQuery.LoadMatchLoctionInscriptions(InputIds);
 
-    if (!MatchedInscriptionLocation) return;
+    if (!MatchedInscriptionLocation)
+      return {
+        BlockInscriptions: BlockInscriptions,
+      };
 
     BlockInscriptions.map((e) => {
       if (!e.location || !e.id) return;
@@ -131,8 +134,10 @@ const inscriptionTransferWork = async (
           }
         });
 
-        if (!inputValue) throw new Error("Input Value Not Found");
-
+        if (!inputValue)
+          throw new Error(
+            `Input Value Not Found, ${DoginalsTransfer.transaction.txid}, ${input.index} `
+          );
         const KeyOutputValue = `${IsValueInCache.txid}:${inputValue?.index}`;
 
         OutpuValueCache[KeyOutputValue] = inputValue?.amount;
