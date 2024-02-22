@@ -68,15 +68,14 @@ const DoginalsIndexer = async () => {
       ArragedBlockData
     );
 
-    if (!TransactionInscriptions?.BlockInscriptions.length) continue;
+    if (TransactionInscriptions?.BlockInscriptions.length) {
+      const newInscriptionNumberStartIndex = await IndexInscriptions(
+        TransactionInscriptions.BlockInscriptions,
+        CurrentInscriptionNumber
+      );
 
-    const newInscriptionNumberStartIndex = await IndexInscriptions(
-      TransactionInscriptions.BlockInscriptions,
-      CurrentInscriptionNumber
-    );
-
-    CurrentInscriptionNumber = newInscriptionNumberStartIndex;
-
+      CurrentInscriptionNumber = newInscriptionNumberStartIndex;
+    }
     const BlockUntill = BlocksToScan[BlocksToScan.length - 1];
 
     startBlock = BlockUntill + 1;

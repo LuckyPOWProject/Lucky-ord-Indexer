@@ -129,15 +129,12 @@ const inscriptionTransferWork = async (
         if (!IsValueInCache) throw new Error("Valid Not present in Cache");
 
         const inputValue = IsValueInCache.outputs.find((e) => {
-          if (e.index === input.index) {
+          if (e.index === input.vin) {
             return e.amount;
           }
         });
 
-        if (!inputValue)
-          throw new Error(
-            `Input Value Not Found, ${DoginalsTransfer.transaction.txid}, ${input.index} `
-          );
+        if (!inputValue) throw new Error(`Input Value Not Found`);
         const KeyOutputValue = `${IsValueInCache.txid}:${inputValue?.index}`;
 
         OutpuValueCache[KeyOutputValue] = inputValue?.amount;
