@@ -19,7 +19,7 @@ const IndexInscriptions = async (
       inscriptionNumberCount += 1;
     }
 
-    //    await inscriptionQuery.storeInscription(SafeInscriptions);
+    await inscriptionQuery.storeInscription(SafeInscriptions);
 
     return inscriptionNumberCount;
   } catch (error) {

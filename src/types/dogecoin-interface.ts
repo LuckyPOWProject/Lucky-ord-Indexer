@@ -10,7 +10,7 @@ export interface BlockHeader {
 export interface inputs {
   txid: string;
   vin: number;
-  script?: string;
+  script: string;
   sequence: number;
   index: number;
 }
