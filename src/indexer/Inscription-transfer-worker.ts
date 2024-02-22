@@ -162,7 +162,7 @@ const inscriptionTransferWork = async (
         });
 
         if (!inputValue) throw new Error(`Input Value Not Found`);
-        const KeyOutputValue = `${IsValueInCache.txid}:${inputValue?.index}`;
+        const KeyOutputValue = `${key}:${inputValue?.index}`;
 
         OutpuValueCache[KeyOutputValue] = inputValue?.amount;
       }
