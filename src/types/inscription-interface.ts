@@ -22,6 +22,7 @@ export interface inscriptionStoreModel {
   owner?: string;
   minter?: string;
   index: number;
+  prehash?: string;
   location: string;
 }
 
@@ -33,4 +34,10 @@ export interface inscriptionIncomplete {
   block: number;
   time: number;
   index: number;
+}
+export interface LoctionUpdates {
+  inscriptionid: string;
+  location: string;
+  prelocation: string;
+  owner: string;
 }

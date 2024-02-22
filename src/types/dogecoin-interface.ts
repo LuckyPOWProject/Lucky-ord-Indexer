@@ -10,7 +10,7 @@ export interface BlockHeader {
 export interface inputs {
   txid: string;
   vin: number;
-  script: string;
+  script?: string;
   sequence: number;
   index: number;
 }
@@ -79,4 +79,16 @@ export interface TransactionWithBlock {
   outputs: outputs[];
   txid: string;
   coinbase: boolean;
+}
+
+export interface TransactionWithPreId {
+  transaction: TransactionWithBlock;
+  prehash: string;
+  inscriptionInputIndex: number;
+  inscriptionId: string;
+}
+
+export interface coinbaseTrasactionMeta {
+  location: string;
+  address: string;
 }

@@ -288,15 +288,15 @@ class BlockHeaderDecoder {
 
       InputIndexStart += this.byte32;
 
-      const PreviousOutputIndex = parseInt(
+      const PreviousOutputIndex = Buffer.from(
         this.sliceBytes(
           InputIndexStart,
           InputIndexStart + this.byte4,
           rawBuffer,
           true
         ),
-        16
-      );
+        "hex"
+      ).readUInt8();
 
       InputIndexStart += this.byte4;
       //Scriptlength
@@ -361,14 +361,16 @@ class BlockHeaderDecoder {
     const Outputs: outputs[] = [];
 
     for (let i = 0; i < numofoutputs; i++) {
-      const Amount = parseInt(
-        this.sliceBytes(
-          OutputStartIndex,
-          OutputStartIndex + this.byte8,
-          rawBuffer,
-          true
-        ),
-        16
+      const Amount = Number(
+        Buffer.from(
+          this.sliceBytes(
+            OutputStartIndex,
+            OutputStartIndex + this.byte8,
+            rawBuffer,
+            true
+          ),
+          "hex"
+        ).readBigUint64LE()
       );
 
       OutputStartIndex += this.byte8;

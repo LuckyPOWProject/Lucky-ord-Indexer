@@ -2,7 +2,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import { inputs } from "../types/dogecoin-interface";
 import { ProtocolTag } from "../shared/system/protocol";
 import { inscriptionDataTemp } from "../types/inscription-interface";
-import { ReverseHash } from "./address-utlis";
+import { ReverseHash } from "./indexer-utlis";
 
 const op_code_to_num = (opcode: number | Buffer): number | undefined => {
   if (typeof opcode !== "number") {
@@ -64,7 +64,7 @@ const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
           isComplete: DoginalRemainingData.isComplete,
           IsremaingChunkPush: true,
           data: DoginalRemainingData.doginalData.toString("hex"),
-          previousHash: `${ReverseHash(e.txid)}:${e.index}`,
+          previousHash: `${ReverseHash(e.txid)}:${e.vin}`,
         });
         return;
       } //not ordinals
@@ -89,6 +89,7 @@ const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
           index: index,
           isComplete: DoginalData.isComplete,
           IsremaingChunkPush: false,
+          previousHash: `${ReverseHash(e.txid)}:${e.vin}`,
         });
     });
 

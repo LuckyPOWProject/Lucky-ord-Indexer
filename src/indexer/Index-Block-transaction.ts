@@ -1,5 +1,6 @@
+import QueryInscriptions from "../shared/database/query-transaction";
 import { Block, TransactionWithBlock } from "../types/dogecoin-interface";
-const ArrageBlockTransaction = (data: Block[]) => {
+const ArrageBlockTransaction = async (data: Block[]) => {
   const ArrageBlockTransactionData: TransactionWithBlock[] = [];
 
   for (const blockData of data.sort((a, b) => a.number - b.number)) {
@@ -29,6 +30,17 @@ const ArrageBlockTransaction = (data: Block[]) => {
       });
     }
   }
+
+  await QueryInscriptions.IndexTransactions(
+    ArrageBlockTransactionData.map((e) => {
+      const inputs = e.inputs.map((b) => {
+        delete b.script;
+        return { ...b };
+      });
+
+      return { ...e, inputs: inputs };
+    })
+  );
 
   return ArrageBlockTransactionData;
 };

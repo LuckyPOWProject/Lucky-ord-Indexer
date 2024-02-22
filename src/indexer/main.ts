@@ -2,8 +2,10 @@ import { Block } from "../types/dogecoin-interface";
 import DogecoinCore from "../api/dogecoin-core-rpc";
 import SystemConfig from "../shared/system/config";
 import BlockHeaderDecoder from "../utils/blockheader-decoder";
-import ArrageBlockTransaction from "./arrage-block-transaction";
+import ArrageBlockTransaction from "./Index-Block-transaction";
 import inscriptionFetchandStore from "./inscription-fetcher";
+import inscriptionTransferWork from "./Inscription-transfer-worker";
+import IndexInscriptions from "./Inscription-Indexer";
 
 const DoginalsIndexer = async () => {
   const DogecoinCLI = new DogecoinCore({
@@ -57,16 +59,25 @@ const DoginalsIndexer = async () => {
       return decodedBlock;
     });
 
-    const ArragedBlockData = ArrageBlockTransaction(DecodeBlockData);
+    const ArragedBlockData = await ArrageBlockTransaction(DecodeBlockData);
 
-    const inscriptions = await inscriptionFetchandStore(
-      ArragedBlockData,
+    const inscriptions = await inscriptionFetchandStore(ArragedBlockData);
+
+    const TransactionInscriptions = await inscriptionTransferWork(
+      inscriptions,
+      ArragedBlockData
+    );
+
+    if (!TransactionInscriptions?.BlockInscriptions.length) continue;
+
+    const newInscriptionNumberStartIndex = await IndexInscriptions(
+      TransactionInscriptions.BlockInscriptions,
       CurrentInscriptionNumber
     );
 
-    const BlockUntill = BlocksToScan[BlocksToScan.length - 1];
+    CurrentInscriptionNumber = newInscriptionNumberStartIndex;
 
-    CurrentInscriptionNumber = inscriptions;
+    const BlockUntill = BlocksToScan[BlocksToScan.length - 1];
 
     startBlock = BlockUntill + 1;
 

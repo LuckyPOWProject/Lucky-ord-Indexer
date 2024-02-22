@@ -4,22 +4,23 @@ import {
   inscriptionIncomplete,
   inscriptionStoreModel,
 } from "../types/inscription-interface";
-import { OutputScriptToAddress } from "../utils/address-utlis";
+import { OutputScriptToAddress } from "../utils/indexer-utlis";
 import DecodeInputScript from "../utils/decode-input-script";
 
 const inscriptionFetchandStore = async (
-  data: TransactionWithBlock[],
-  CurrentInscriptionNumber: number
-): Promise<number> => {
-  let inscriptionNumber = CurrentInscriptionNumber;
-
+  data: TransactionWithBlock[]
+): Promise<inscriptionStoreModel[]> => {
   try {
     const inscriptionInCompleteCache: Record<string, inscriptionIncomplete> =
       {};
 
+    const inscriptionCache: Record<string, inscriptionStoreModel> = {};
+
     const inscriptionData: inscriptionStoreModel[] = [];
 
     let pendinginscriptions: inscriptionIncomplete[] = [];
+
+    const LocationCache = new Set();
 
     for (const transactions of data) {
       const DecodedInputData = DecodeInputScript(transactions.inputs);
@@ -97,14 +98,15 @@ const inscriptionFetchandStore = async (
             };
             pendinginscriptions.push(inscriptionInCompleteCache[Location]);
           } else {
-            inscriptionNumber += 1;
+            LocationCache.add(Location);
 
-            inscriptionData.push({
+            inscriptionCache[Location] = {
+              prehash: inscriptionInInputs.previousHash,
               inscription: {
                 contentType: newDataHandler.inscription.contentType,
                 data: newData,
               },
-              inscriptionNumber: inscriptionNumber,
+              inscriptionNumber: 0,
               index: newDataHandler.index,
               block: newDataHandler.block,
               time: newDataHandler.time,
@@ -113,7 +115,9 @@ const inscriptionFetchandStore = async (
               txid: newDataHandler.txid,
               owner: inscriptionMinter,
               minter: inscriptionMinter,
-            });
+            };
+
+            inscriptionData.push(inscriptionCache[Location]);
           }
           continue;
         }
@@ -138,12 +142,11 @@ const inscriptionFetchandStore = async (
           );
           continue;
         }
-
-        inscriptionNumber += 1;
-
-        inscriptionData.push({
+        LocationCache.add(Location);
+        inscriptionCache[Location] = {
+          prehash: inscriptionInInputs?.previousHash,
           id: inscription_id,
-          inscriptionNumber: inscriptionNumber,
+          inscriptionNumber: 0,
           inscription: {
             contentType: inscription_contentType,
             data: inscription_data,
@@ -155,14 +158,12 @@ const inscriptionFetchandStore = async (
           location: Location,
           owner: inscriptionMinter,
           minter: inscriptionMinter,
-        });
+        };
+        inscriptionData.push(inscriptionCache[Location]);
       }
     }
 
     const DBQuery = [];
-    if (inscriptionData.length !== 0) {
-      DBQuery.push(await inscriptionQuery.storeInscription(inscriptionData));
-    }
 
     if (pendinginscriptions.length !== 0) {
       DBQuery.push(
@@ -172,7 +173,7 @@ const inscriptionFetchandStore = async (
 
     await Promise.all(DBQuery);
 
-    return inscriptionNumber;
+    return inscriptionData;
   } catch (error) {
     throw error;
   }
