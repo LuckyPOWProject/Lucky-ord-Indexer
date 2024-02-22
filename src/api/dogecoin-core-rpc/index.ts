@@ -49,6 +49,24 @@ class DogecoinCore {
     const LastBlock: number = await this.cli.getBlockCount();
     return LastBlock;
   }
+
+  async GetTransaction(txid: string) {
+    const TransactionData = await this.cli.getRawTransaction(txid, true);
+    return TransactionData;
+  }
+
+  async getOutPutValue(txid: string) {
+    const transaction = await this.GetTransaction(txid);
+
+    const Outputs = transaction.vout.map((e: any) => {
+      const value = e.value * 1e8;
+      const hash = txid;
+      const index = e.n;
+      return { value: value, index: index, hash: hash };
+    });
+
+    return Outputs;
+  }
 }
 
 export default DogecoinCore;

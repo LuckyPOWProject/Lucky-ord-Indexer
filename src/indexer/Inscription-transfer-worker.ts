@@ -6,8 +6,13 @@ import {
   coinbaseTrasactionMeta,
 } from "../types/dogecoin-interface";
 import { inscriptionStoreModel } from "../types/inscription-interface";
-import { OutputScriptToAddress, ReverseHash } from "../utils/indexer-utlis";
+import Decoder, {
+  OutputScriptToAddress,
+  ReverseHash,
+} from "../utils/indexer-utlis";
 import { LoctionUpdates } from "../types/inscription-interface";
+import DogecoinCore from "../api/dogecoin-core-rpc";
+import SystemConfig from "../shared/system/config";
 const OutpuValueCache: Record<string, number> = {};
 const coinbaseTransactions: Record<number, coinbaseTrasactionMeta> = {};
 
@@ -15,6 +20,14 @@ const inscriptionTransferWork = async (
   data: inscriptionStoreModel[],
   blockData: TransactionWithBlock[]
 ) => {
+  const DogecoinCLI = new DogecoinCore({
+    username: SystemConfig.user,
+    password: SystemConfig.password,
+    host: SystemConfig.host,
+    port: SystemConfig.port,
+  });
+
+  await DogecoinCLI.connect();
   try {
     const MatchedLoctionCache: Record<string, string> = {};
 
@@ -126,9 +139,23 @@ const inscriptionTransferWork = async (
 
         const IsValueInCache = InputTransactionSet[key];
 
-        if (!IsValueInCache) throw new Error("Valid Not present in Cache");
+        let TransactionHandler;
 
-        const inputValue = IsValueInCache.outputs.find((e) => {
+        if (!IsValueInCache) {
+          const TransactionFromNode = await DogecoinCLI.GetTransaction(
+            ReverseHash(input.txid)
+          );
+
+          if (!TransactionFromNode)
+            throw new Error("Faild to get transaction from node...");
+
+          const DecodeValues = Decoder(TransactionFromNode);
+          TransactionHandler = DecodeValues;
+        } else {
+          TransactionHandler = IsValueInCache;
+        }
+
+        const inputValue = TransactionHandler.outputs.find((e) => {
           if (e.index === input.vin) {
             return e.amount;
           }
@@ -148,7 +175,9 @@ const inscriptionTransferWork = async (
       const inputValue: number[] = [];
 
       for (const inscriptionInputs of InscriptionLogicInput) {
-        const Key = `${inscriptionInputs.txid}:${inscriptionInputs.vin}`;
+        const Key = `${ReverseHash(inscriptionInputs.txid)}:${
+          inscriptionInputs.vin
+        }`;
 
         const InputSats = OutpuValueCache[Key];
 

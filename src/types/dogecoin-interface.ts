@@ -92,3 +92,11 @@ export interface coinbaseTrasactionMeta {
   location: string;
   address: string;
 }
+export type Outputdata = {
+  hash: string;
+  amount: number;
+  index: number;
+};
+export interface outputDecode {
+  outputs: Outputdata[];
+}
