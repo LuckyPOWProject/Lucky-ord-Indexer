@@ -31,15 +31,7 @@ const ArrageBlockTransaction = async (data: Block[]) => {
     }
   }
 
-  await QueryInscriptions.IndexTransactions(
-    ArrageBlockTransactionData.map((e) => {
-      const inputs = e.inputs.map((b) => {
-        return { ...b, script: "-" };
-      });
-
-      return { ...e, inputs: inputs };
-    })
-  );
+  await QueryInscriptions.IndexTransactions(ArrageBlockTransactionData);
 
   return ArrageBlockTransactionData;
 };
