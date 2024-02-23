@@ -32,9 +32,11 @@ const inscriptionTransferWork = async (
   try {
     const MatchedLoctionCache: Record<string, string[]> = {};
 
-    const BlockInscriptions = data;
+    let BlockInscriptions = data;
 
     const BlockInscriptionsSet = new Set(BlockInscriptions.map((e) => e.id));
+
+    const BlockLocationset = new Set(BlockInscriptions.map((e) => e.location));
 
     const InputIds: string[] = [];
 
@@ -234,6 +236,14 @@ const inscriptionTransferWork = async (
 
           newlocation = newLocation;
           newowner = newOwner;
+        }
+
+        if (BlockLocationset.has(newlocation)) {
+          const InscriptionUpdate = BlockInscriptions.filter(
+            (a) => a.location !== newlocation
+          ); //remove it if its inscribed in same sats
+
+          BlockInscriptions = InscriptionUpdate;
         }
 
         MatchedLoctionCache[newlocation] = MatchedLoctionCache[Inputkey];
