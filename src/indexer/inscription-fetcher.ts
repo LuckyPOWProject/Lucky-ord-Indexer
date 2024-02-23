@@ -67,15 +67,15 @@ const inscriptionFetchandStore = async (
           const PushinSameBatch =
             inscriptionInCompleteCache[inscriptionInInputs?.previousHash];
 
-          let inscription_id_ = PushinSameBatch.id;
+          let inscription_id_ = PushinSameBatch?.id;
           let inscription_contentType_ =
             PushinSameBatch?.inscription?.contentType;
 
           let inscription_data_ = PushinSameBatch?.inscription?.data;
 
-          let txid_ = PushinSameBatch.txid;
+          let txid_ = PushinSameBatch?.txid;
 
-          let transactionIndex_ = PushinSameBatch.index;
+          let transactionIndex_ = PushinSameBatch?.index;
 
           if (!PushinSameBatch) {
             const pendingInscriptionFromDb =
