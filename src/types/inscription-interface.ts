@@ -31,8 +31,6 @@ export interface inscriptionIncomplete {
   location: string;
   inscription: inscription;
   txid: string;
-  block: number;
-  time: number;
   index: number;
 }
 export interface LoctionUpdates {

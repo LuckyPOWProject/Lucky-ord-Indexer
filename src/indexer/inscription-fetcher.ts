@@ -10,6 +10,7 @@ import DecodeInputScript from "../utils/decode-input-script";
 interface inscriptionFetchout {
   pending: inscriptionIncomplete[];
   inscriptions: inscriptionStoreModel[];
+  locations: Record<string, string>;
 }
 
 const inscriptionFetchandStore = async (
@@ -23,7 +24,14 @@ const inscriptionFetchandStore = async (
 
     let pendinginscriptions: inscriptionIncomplete[] = [];
 
-    const LocationCache = new Set();
+    /**
+     * In Location tracker we will store his location history with
+     * inscription id, Now in inscription-transfer-worker.ts we check
+     * if any inscription was stored in this location sats, if they where
+     * store then the inscription will be invalid and we won't store it
+     */
+
+    const LocationTracker: Record<string, string> = {};
 
     for (const transactions of data) {
       const DecodedInputData = DecodeInputScript(transactions.inputs);
@@ -34,144 +42,123 @@ const inscriptionFetchandStore = async (
 
       const inscriptionMinter = OutputScriptToAddress(inscriptionOutput.script);
 
-      const Location = `${transactions.txid}:${inscriptionOutput.index}`; //location is where inscription is stored
+      const Location = `${transactions.txid}:${inscriptionOutput.index}`;
 
       for (const inscriptionInInputs of DecodedInputData) {
-        const inscription_id = `${transactions.txid}i${inscriptionInInputs.index}`;
+        let inscription_id = `${transactions.txid}i${inscriptionInInputs.index}`;
 
-        const inscription_contentType = inscriptionInInputs.contentType;
+        let inscription_contentType = inscriptionInInputs.contentType;
 
-        const inscription_data = inscriptionInInputs.data;
+        let inscription_data = inscriptionInInputs.data;
 
-        if (
-          inscriptionInInputs.IsremaingChunkPush &&
-          inscriptionInInputs.previousHash
-        ) {
-          const IsremaingChunkPushSameBlock =
-            inscriptionInCompleteCache[inscriptionInInputs.previousHash];
+        let txid = transactions.txid;
 
-          let newDataHandler;
-          let dataFromDB = false;
+        let transactionIndex = transactions.index;
 
-          if (
-            !IsremaingChunkPushSameBlock ||
-            !IsremaingChunkPushSameBlock.inscription.data
-          ) {
-            //Lets Check if they are in Database
+        let InscriptionComplete = inscriptionInInputs.isComplete;
 
-            const isRemaininginDB =
+        if (inscriptionInInputs.IsremaingChunkPush) {
+          //Now lets get the prevous hash used
+          if (!inscriptionInInputs.previousHash) continue;
+
+          const PushinSameBatch =
+            inscriptionInCompleteCache[inscriptionInInputs?.previousHash];
+
+          let inscription_id_ = PushinSameBatch.id;
+          let inscription_contentType_ =
+            PushinSameBatch?.inscription?.contentType;
+
+          let inscription_data_ = PushinSameBatch?.inscription?.data;
+
+          let txid_ = PushinSameBatch.txid;
+
+          let transactionIndex_ = PushinSameBatch.index;
+
+          if (!PushinSameBatch) {
+            const pendingInscriptionFromDb =
               await inscriptionQuery.getPendingInscriptions(
                 inscriptionInInputs.previousHash
               );
 
-            if (!isRemaininginDB) continue;
+            if (!pendingInscriptionFromDb) continue;
 
-            dataFromDB = true;
-            newDataHandler = isRemaininginDB;
-          } else {
-            newDataHandler = IsremaingChunkPushSameBlock;
-          }
+            inscription_id_ = pendingInscriptionFromDb.id;
+            inscription_contentType_ =
+              pendingInscriptionFromDb.inscription.contentType;
+            inscription_data_ = pendingInscriptionFromDb.inscription.data;
+            txid = pendingInscriptionFromDb.txid;
+            transactionIndex_ = pendingInscriptionFromDb.index;
 
-          const newData = newDataHandler.inscription.data + inscription_data;
-
-          if (dataFromDB) {
             await inscriptionQuery.DeletePendingInscriptions(
               inscriptionInInputs.previousHash
             );
-          } else {
-            delete inscriptionInCompleteCache[inscriptionInInputs.previousHash];
-
-            pendinginscriptions = pendinginscriptions.filter(
-              (a) => a.location !== inscriptionInInputs.previousHash
-            );
           }
 
-          if (LocationCache.has(Location)) continue;
+          delete inscriptionInCompleteCache[inscriptionInInputs.previousHash];
 
-          LocationCache.add(Location);
-
-          if (!inscriptionInInputs.isComplete) {
-            inscriptionInCompleteCache[Location] = {
-              inscription: {
-                contentType: newDataHandler.inscription.contentType,
-                data: newData,
-              },
-              index: newDataHandler.index,
-              block: newDataHandler.block,
-              time: newDataHandler.time,
-              txid: newDataHandler.txid,
-              location: Location,
-              id: newDataHandler.id,
-            };
-            pendinginscriptions.push(inscriptionInCompleteCache[Location]);
-          } else {
-            const InscriptionModel = {
-              prehash: inscriptionInInputs.previousHash,
-              inscription: {
-                contentType: newDataHandler.inscription.contentType,
-                data: newData,
-              },
-              inscriptionNumber: 0,
-              index: newDataHandler.index,
-              block: newDataHandler.block,
-              time: newDataHandler.time,
-              id: newDataHandler.id,
-              location: Location,
-              txid: newDataHandler.txid,
-              owner: inscriptionMinter,
-              minter: inscriptionMinter,
-            };
-
-            inscriptionData.push(InscriptionModel);
-          }
-          continue;
+          inscription_id = inscription_id_;
+          inscription_contentType = inscription_contentType_;
+          inscription_data = inscription_data_ || "" + inscriptionInInputs.data;
+          txid = txid_;
+          transactionIndex = transactionIndex_;
         }
 
-        const inscriptionInCompleteCacheKey = Location;
+        //we will track every location where the inscription was inscribed
+        LocationTracker[Location] = inscription_id;
 
-        if (LocationCache.has(Location)) continue; //same sats can't inscribe multiple inscription
-        LocationCache.add(Location);
-
-        if (!inscriptionInInputs.isComplete) {
-          inscriptionInCompleteCache[inscriptionInCompleteCacheKey] = {
-            inscription: {
-              data: inscription_data,
-              contentType: inscription_contentType,
-            },
-            block: 0,
-            index: transactions.index,
-            time: transactions.time,
-            location: Location,
-            txid: transactions.txid,
+        if (!InscriptionComplete) {
+          inscriptionInCompleteCache[Location] = {
             id: inscription_id,
+            index: transactionIndex,
+            location: Location,
+            txid: txid,
+            inscription: {
+              contentType: inscription_contentType,
+              data: inscription_data,
+            },
           };
-          pendinginscriptions.push(
-            inscriptionInCompleteCache[inscriptionInCompleteCacheKey]
+
+          const IsInscriptionAlreadyPending = pendinginscriptions.find(
+            (a) => a.id === inscription_id
           );
+
+          if (!IsInscriptionAlreadyPending) {
+            pendinginscriptions.push(inscriptionInCompleteCache[Location]);
+            continue;
+          }
+
+          IsInscriptionAlreadyPending.location = Location;
+          IsInscriptionAlreadyPending.inscription.data = inscription_data;
+
           continue;
         }
 
-        const InscriptionModel = {
-          prehash: inscriptionInInputs?.previousHash,
+        pendinginscriptions = pendinginscriptions.filter(
+          (a) => a.id !== inscription_id
+        );
+
+        inscriptionData.push({
           id: inscription_id,
-          inscriptionNumber: 0,
-          inscription: {
-            contentType: inscription_contentType,
-            data: inscription_data,
-          },
-          block: transactions.blockNumber,
-          time: transactions.time,
-          txid: transactions.txid,
           index: transactions.index,
           location: Location,
           owner: inscriptionMinter,
           minter: inscriptionMinter,
-        };
-        inscriptionData.push(InscriptionModel);
+          txid: transactions.txid,
+          time: transactions.time,
+          block: transactions.blockNumber,
+          inscription: {
+            contentType: inscription_contentType,
+            data: inscription_data,
+          },
+        });
       }
     }
 
-    return { inscriptions: inscriptionData, pending: pendinginscriptions };
+    return {
+      locations: LocationTracker,
+      pending: pendinginscriptions,
+      inscriptions: inscriptionData,
+    };
   } catch (error) {
     throw error;
   }

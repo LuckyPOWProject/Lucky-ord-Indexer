@@ -65,13 +65,15 @@ const DoginalsIndexer = async () => {
 
     const TransactionInscriptions = await inscriptionTransferWork(
       inscriptions.inscriptions,
-      ArragedBlockData
+      ArragedBlockData,
+      inscriptions.locations
     );
 
     if (TransactionInscriptions?.BlockInscriptions.length) {
       const newInscriptionNumberStartIndex = await IndexInscriptions(
         TransactionInscriptions.BlockInscriptions,
         inscriptions.pending,
+        TransactionInscriptions.invalidInscriptionsIds,
         CurrentInscriptionNumber
       );
 

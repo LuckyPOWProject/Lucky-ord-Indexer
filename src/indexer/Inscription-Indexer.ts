@@ -7,6 +7,7 @@ import {
 const IndexInscriptions = async (
   data: inscriptionStoreModel[],
   pending: inscriptionIncomplete[],
+  invalidInscriptions: Set<string>,
   inscriptionNumberCount: number = 9
 ) => {
   try {
@@ -29,6 +30,10 @@ const IndexInscriptions = async (
       const Location = inscriptions.location;
 
       if (MatchedLocationHash.has(Location)) continue; // in same sats you can't inscribe
+
+      if (!inscriptions.id) continue;
+
+      if (invalidInscriptions.has(inscriptions?.id)) continue;
 
       SafeInscriptions.push({
         ...inscriptions,
@@ -53,6 +58,9 @@ const IndexInscriptions = async (
       const Location = pendingInscription.location;
 
       if (MatchedLocationHashPending.has(Location)) continue; // in same sats you can't inscribe
+
+      if (invalidInscriptions.has(pendingInscription.id)) continue;
+
       SafePending.push({ ...pendingInscription });
     }
 

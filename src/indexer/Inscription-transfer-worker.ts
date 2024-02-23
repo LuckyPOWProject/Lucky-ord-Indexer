@@ -19,7 +19,8 @@ const coinbaseTransactions: Record<number, coinbaseTrasactionMeta> = {};
 
 const inscriptionTransferWork = async (
   data: inscriptionStoreModel[],
-  blockData: TransactionWithBlock[]
+  blockData: TransactionWithBlock[],
+  locationCache: Record<string, string>
 ) => {
   const DogecoinCLI = new DogecoinCore({
     username: SystemConfig.user,
@@ -45,6 +46,8 @@ const inscriptionTransferWork = async (
     const InputsHash: string[] = [];
 
     const InputTransactionSet: Record<string, TransactionWithBlock> = {};
+
+    const invalidInscriptions = new Set<string>();
 
     for (const transaction of blockData) {
       //We store the coinbase block, because if the inscription is burned then it goes to miner
@@ -238,6 +241,17 @@ const inscriptionTransferWork = async (
           newowner = newOwner;
         }
 
+        /**
+         * Now we check if the location sats where the inscription
+         * was inscriped was in the location sats where the inscription
+         * was already stored or transfered throught
+         */
+
+        const IsSameSatsInInscription = locationCache[newlocation];
+
+        if (IsSameSatsInInscription)
+          invalidInscriptions.add(IsSameSatsInInscription);
+
         if (BlockLocationset.has(newlocation)) {
           const InscriptionUpdate = BlockInscriptions.filter(
             (a) => a.location !== newlocation
@@ -247,6 +261,7 @@ const inscriptionTransferWork = async (
         }
 
         MatchedLoctionCache[newlocation] = MatchedLoctionCache[Inputkey];
+
         delete MatchedLoctionCache[Inputkey];
 
         const isTransactioninCache = InputTransactionSet[DoginalsTransfer.txid];
@@ -277,7 +292,6 @@ const inscriptionTransferWork = async (
           if (isInscriptionRepeat) {
             isInscriptionRepeat.location = newlocation;
             isInscriptionRepeat.owner = newowner;
-
             return;
           }
 
@@ -297,6 +311,7 @@ const inscriptionTransferWork = async (
 
     return {
       BlockInscriptions: BlockInscriptions,
+      invalidInscriptionsIds: invalidInscriptions,
     };
   } catch (error) {
     throw error;
