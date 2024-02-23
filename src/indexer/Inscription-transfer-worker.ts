@@ -82,30 +82,19 @@ const inscriptionTransferWork = async (
     for (const transaction of blockData) {
       if (transaction.coinbase) continue;
 
-      transaction.inputs.map((e) => {
-        const key = `${ReverseHash(e.txid)}:${e.vin}`;
+      for (const txinputs of transaction.inputs) {
+        const key = `${ReverseHash(txinputs.txid)}:${txinputs.vin}`;
         const MatchedInscriptionLocations = MatchedLoctionCache[key];
-
-        if (!MatchedInscriptionLocations) return;
-
-        const Inputhash = transaction.inputs.map(
-          (e) => `${ReverseHash(e.txid)}:${e.vin}`
-        );
-
+        if (!MatchedInscriptionLocations) continue;
+        const Inputhash = transaction.inputs.map((e) => ReverseHash(e.txid));
         InputsHash.push(...Inputhash);
-      });
+      }
     }
-
-    const TransactionsHashFromInputHash = InputsHash.map(
-      (e) => e.split(":")[0]
-    );
 
     //Load the transaction data of matched Inputs
 
     const TransactionOfInputs =
-      await QueryInscriptions.LoadTransactionMatchedWithInput(
-        TransactionsHashFromInputHash
-      );
+      await QueryInscriptions.LoadTransactionMatchedWithInput(InputsHash);
 
     const InputTransactionSet: Record<string, TransactionWithBlock> = {};
 
@@ -126,8 +115,10 @@ const inscriptionTransferWork = async (
      * Now lets begin to track the Doginals Transfers with logic **/
 
     for (const DoginalsTransfer of blockData) {
+      if (DoginalsTransfer.coinbase) continue;
+
       for (const [i, input] of DoginalsTransfer.inputs.entries()) {
-        const key = `${ReverseHash(input.txid)}`;
+        const key = ReverseHash(input.txid);
 
         const Inputkey = `${key}:${input.vin}`;
 
@@ -141,41 +132,59 @@ const inscriptionTransferWork = async (
 
         if (!IsValueInCache) {
           const TransactionFromNode = await DogecoinCLI.GetTransaction(
-            ReverseHash(input.txid)
+            ReverseHash(key)
           );
 
           if (!TransactionFromNode)
             throw new Error("Faild to get transaction from node...");
 
           const DecodeValues = Decoder(TransactionFromNode);
+
           TransactionHandler = DecodeValues;
         } else {
           TransactionHandler = IsValueInCache;
         }
 
-        const inputValue = TransactionHandler.outputs.find((e) => {
-          if (e.index === input.vin) {
-            return e.amount;
-          }
+        TransactionHandler.outputs.find((e) => {
+          const KeyOutputValue = `${key}:${e?.index}`;
+          OutpuValueCache[KeyOutputValue] = e?.amount;
         });
-
-        if (!inputValue) throw new Error(`Input Value Not Found`);
-        const KeyOutputValue = `${key}:${inputValue?.index}`;
-
-        OutpuValueCache[KeyOutputValue] = inputValue?.amount;
 
         const InscriptionLogicInput = DoginalsTransfer.inputs.slice(0, i);
 
         const inputValues: number[] = [];
 
         for (const inscriptionInputs of InscriptionLogicInput) {
-          const Key = `${ReverseHash(inscriptionInputs.txid)}:${
-            inscriptionInputs.vin
-          }`;
+          const inputTxid = ReverseHash(inscriptionInputs.txid);
+          const KeySats = `${inputTxid}:${inscriptionInputs.vin}`;
 
-          const InputSats = OutpuValueCache[Key];
+          let InputSats = OutpuValueCache[KeySats];
 
-          if (!InputSats) throw new Error("Not Input sats found for tx");
+          if (!InputSats) {
+            // Now lets get Value
+
+            let IsTxinSameSet = InputTransactionSet[inputTxid];
+
+            if (!IsTxinSameSet) {
+              const TransactionFromNode = await DogecoinCLI.GetTransaction(
+                inputTxid
+              );
+              IsTxinSameSet = TransactionFromNode;
+            }
+
+            if (!IsTxinSameSet) {
+              throw new Error("Faild to get input tx data");
+            }
+
+            IsTxinSameSet.outputs.map((e) => {
+              const KeyOutputValue = `${inputTxid}:${e?.index}`;
+              OutpuValueCache[KeyOutputValue] = e?.amount;
+            });
+
+            InputSats = OutpuValueCache[KeySats];
+          }
+
+          if (!InputSats) throw new Error("Faild to get input sats");
 
           inputValues.push(InputSats);
         }
@@ -196,8 +205,6 @@ const inscriptionTransferWork = async (
 
         const Inscription = isInscriptionTransfer;
         const prehash = Inputkey;
-
-        const IsInscriptionInStoreQue = BlockInscriptionsSet.has(Inscription);
 
         const BlockCoinBase =
           coinbaseTransactions[DoginalsTransfer.blockNumber];
@@ -230,6 +237,8 @@ const inscriptionTransferWork = async (
           InputTransactionSet[DoginalsTransfer.txid] = DoginalsTransfer;
         }
 
+        const IsInscriptionInStoreQue = BlockInscriptionsSet.has(Inscription);
+
         if (IsInscriptionInStoreQue) {
           const InscriptionQue = BlockInscriptions.find(
             (a) => a.id === Inscription && a.prehash === prehash
@@ -240,6 +249,15 @@ const inscriptionTransferWork = async (
           InscriptionQue.location = newlocation;
           InscriptionQue.owner = newowner;
           continue;
+        }
+
+        const isInscriptionRepeat = LoctionUpdateInscriptions.find(
+          (a) => a.inscriptionid === Inscription
+        );
+
+        if (isInscriptionRepeat) {
+          isInscriptionRepeat.location = newlocation;
+          isInscriptionRepeat.owner = newowner;
         }
 
         LoctionUpdateInscriptions.push({
