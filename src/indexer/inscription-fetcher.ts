@@ -171,10 +171,6 @@ const inscriptionFetchandStore = async (
       }
     }
 
-    if (pendinginscriptions.length !== 0) {
-      await inscriptionQuery.storePendingInscriptions(pendinginscriptions);
-    }
-
     return { inscriptions: inscriptionData, pending: pendinginscriptions };
   } catch (error) {
     throw error;
