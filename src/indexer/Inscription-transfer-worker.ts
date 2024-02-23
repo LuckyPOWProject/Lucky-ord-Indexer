@@ -2,7 +2,6 @@ import inscriptionQuery from "../shared/database/query-inscription";
 import QueryInscriptions from "../shared/database/query-transaction";
 import {
   TransactionWithBlock,
-  TransactionWithPreId,
   coinbaseTrasactionMeta,
 } from "../types/dogecoin-interface";
 import { inscriptionStoreModel } from "../types/inscription-interface";
@@ -13,7 +12,9 @@ import Decoder, {
 import { LoctionUpdates } from "../types/inscription-interface";
 import DogecoinCore from "../api/dogecoin-core-rpc";
 import SystemConfig from "../shared/system/config";
+
 const OutpuValueCache: Record<string, number> = {};
+
 const coinbaseTransactions: Record<number, coinbaseTrasactionMeta> = {};
 
 const inscriptionTransferWork = async (
@@ -76,8 +77,6 @@ const inscriptionTransferWork = async (
       MatchedLoctionCache[e.location] = e.id;
     });
 
-    const ValidDoginalsTransfer_Transaction: TransactionWithPreId[] = [];
-
     const InputsHash: string[] = [];
 
     for (const transaction of blockData) {
@@ -88,13 +87,6 @@ const inscriptionTransferWork = async (
         const MatchedInscriptionLocations = MatchedLoctionCache[key];
 
         if (!MatchedInscriptionLocations) return;
-
-        ValidDoginalsTransfer_Transaction.push({
-          transaction: transaction,
-          inscriptionInputIndex: e.index,
-          prehash: key,
-          inscriptionId: MatchedInscriptionLocations,
-        });
 
         const Inputhash = transaction.inputs.map(
           (e) => `${ReverseHash(e.txid)}:${e.vin}`
@@ -133,9 +125,15 @@ const inscriptionTransferWork = async (
     /**Now we get all important data that is required,
      * Now lets begin to track the Doginals Transfers with logic **/
 
-    for (const DoginalsTransfer of ValidDoginalsTransfer_Transaction) {
-      for (const input of DoginalsTransfer.transaction.inputs) {
+    for (const DoginalsTransfer of blockData) {
+      for (const [i, input] of DoginalsTransfer.inputs.entries()) {
         const key = `${ReverseHash(input.txid)}`;
+
+        const Inputkey = `${key}:${input.vin}`;
+
+        const isInscriptionTransfer = MatchedLoctionCache[Inputkey];
+
+        if (!isInscriptionTransfer) continue; // not a inscription transfer
 
         const IsValueInCache = InputTransactionSet[key];
 
@@ -165,89 +163,92 @@ const inscriptionTransferWork = async (
         const KeyOutputValue = `${key}:${inputValue?.index}`;
 
         OutpuValueCache[KeyOutputValue] = inputValue?.amount;
-      }
 
-      const InscriptionLogicInput = DoginalsTransfer.transaction.inputs.slice(
-        0,
-        DoginalsTransfer.inscriptionInputIndex
-      );
+        const InscriptionLogicInput = DoginalsTransfer.inputs.slice(0, i);
 
-      const inputValue: number[] = [];
+        const inputValues: number[] = [];
 
-      for (const inscriptionInputs of InscriptionLogicInput) {
-        const Key = `${ReverseHash(inscriptionInputs.txid)}:${
-          inscriptionInputs.vin
-        }`;
+        for (const inscriptionInputs of InscriptionLogicInput) {
+          const Key = `${ReverseHash(inscriptionInputs.txid)}:${
+            inscriptionInputs.vin
+          }`;
 
-        const InputSats = OutpuValueCache[Key];
+          const InputSats = OutpuValueCache[Key];
 
-        if (!InputSats) throw new Error("Not Input sats found for tx");
+          if (!InputSats) throw new Error("Not Input sats found for tx");
 
-        inputValue.push(InputSats);
-      }
-
-      const SumInputValues = inputValue.reduce((a, b) => a + b, 0) + 1;
-
-      let newInscriptionIndex;
-      let CurrentOutputSum = 0;
-
-      for (const [
-        i,
-        Outputs,
-      ] of DoginalsTransfer.transaction.outputs.entries()) {
-        const OutputValue = Outputs.amount;
-        if (OutputValue + CurrentOutputSum > SumInputValues) {
-          newInscriptionIndex = i;
-          break;
+          inputValues.push(InputSats);
         }
-        CurrentOutputSum += OutputValue;
-      }
 
-      const Inscription = DoginalsTransfer.inscriptionId;
-      const prehash = DoginalsTransfer.prehash;
+        const SumInputValues = inputValues.reduce((a, b) => a + b, 0) + 1;
 
-      const IsInscriptionInStoreQue = BlockInscriptionsSet.has(Inscription);
+        let newInscriptionIndex;
+        let CurrentOutputSum = 0;
 
-      const BlockCoinBase =
-        coinbaseTransactions[DoginalsTransfer.transaction.blockNumber];
+        for (const [i, Outputs] of DoginalsTransfer.outputs.entries()) {
+          const OutputValue = Outputs.amount;
+          if (OutputValue + CurrentOutputSum > SumInputValues) {
+            newInscriptionIndex = i;
+            break;
+          }
+          CurrentOutputSum += OutputValue;
+        }
 
-      let newlocation = BlockCoinBase.location;
-      let newowner = BlockCoinBase.address;
+        const Inscription = isInscriptionTransfer;
+        const prehash = Inputkey;
 
-      if (newInscriptionIndex !== undefined) {
-        const newLoctionOutput =
-          DoginalsTransfer.transaction.outputs[newInscriptionIndex];
+        const IsInscriptionInStoreQue = BlockInscriptionsSet.has(Inscription);
 
-        const newLocation = `${DoginalsTransfer.transaction.txid}:${newLoctionOutput.index}`;
+        const BlockCoinBase =
+          coinbaseTransactions[DoginalsTransfer.blockNumber];
 
-        const newOwner = OutputScriptToAddress(newLoctionOutput.script);
+        let newlocation = BlockCoinBase.location;
+        let newowner = BlockCoinBase.address;
 
-        newlocation = newLocation;
-        newowner = newOwner;
-      }
+        if (newInscriptionIndex !== undefined) {
+          const newLoctionOutput =
+            DoginalsTransfer.outputs[newInscriptionIndex];
 
-      console.log(
-        `New Location Update:- ${newlocation},, Inscription:- ${Inscription}`
-      );
+          const newLocation = `${DoginalsTransfer.txid}:${newLoctionOutput.index}`;
 
-      if (IsInscriptionInStoreQue) {
-        const InscriptionQue = BlockInscriptions.find(
-          (a) => a.id === Inscription && a.prehash === prehash
+          const newOwner = OutputScriptToAddress(newLoctionOutput.script);
+
+          newlocation = newLocation;
+          newowner = newOwner;
+        }
+
+        console.log(
+          `New Location Update:- ${newlocation},, Inscription:- ${Inscription}`
         );
 
-        if (!InscriptionQue) continue;
+        MatchedLoctionCache[newlocation] = MatchedLoctionCache[Inputkey];
+        delete MatchedLoctionCache[Inputkey];
 
-        InscriptionQue.location = newlocation;
-        InscriptionQue.owner = newowner;
-        continue;
+        const isTransactioninCache = InputTransactionSet[DoginalsTransfer.txid];
+
+        if (!isTransactioninCache) {
+          InputTransactionSet[DoginalsTransfer.txid] = DoginalsTransfer;
+        }
+
+        if (IsInscriptionInStoreQue) {
+          const InscriptionQue = BlockInscriptions.find(
+            (a) => a.id === Inscription && a.prehash === prehash
+          );
+
+          if (!InscriptionQue) continue;
+
+          InscriptionQue.location = newlocation;
+          InscriptionQue.owner = newowner;
+          continue;
+        }
+
+        LoctionUpdateInscriptions.push({
+          location: newlocation,
+          owner: newowner,
+          inscriptionid: Inscription,
+          prelocation: prehash,
+        });
       }
-
-      LoctionUpdateInscriptions.push({
-        location: newlocation,
-        owner: newowner,
-        inscriptionid: Inscription,
-        prelocation: prehash,
-      });
     }
 
     await inscriptionQuery.UpdateInscriptionLocation(LoctionUpdateInscriptions); // update the inscriptions location
