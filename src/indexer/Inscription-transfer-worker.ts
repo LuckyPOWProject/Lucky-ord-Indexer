@@ -30,7 +30,7 @@ const inscriptionTransferWork = async (
 
   await DogecoinCLI.connect();
   try {
-    const MatchedLoctionCache: Record<string, string> = {};
+    const MatchedLoctionCache: Record<string, string[]> = {};
 
     const BlockInscriptions = data;
 
@@ -39,6 +39,10 @@ const inscriptionTransferWork = async (
     const InputIds: string[] = [];
 
     const LoctionUpdateInscriptions: LoctionUpdates[] = [];
+
+    const InputsHash: string[] = [];
+
+    const InputTransactionSet: Record<string, TransactionWithBlock> = {};
 
     for (const transaction of blockData) {
       //We store the coinbase block, because if the inscription is burned then it goes to miner
@@ -61,27 +65,33 @@ const inscriptionTransferWork = async (
     //Now lets Get the List of Inscription that location = prehash
 
     const MatchedInscriptionLocation =
-      await inscriptionQuery.LoadMatchLoctionInscriptions(InputIds);
+      (await inscriptionQuery.LoadMatchLoctionInscriptions(InputIds)) || [];
 
-    if (!MatchedInscriptionLocation)
-      return {
-        BlockInscriptions: BlockInscriptions,
-      };
+    const Inscription = MatchedInscriptionLocation.map(
+      (e): { inscription: string; location: string } => {
+        return {
+          inscription: e.id,
+          location: e.location,
+        };
+      }
+    ).concat(
+      BlockInscriptions.map((e): { inscription: string; location: string } => {
+        return { inscription: e?.id || "", location: e.location };
+      })
+    );
 
-    BlockInscriptions.map((e) => {
-      if (!e.location || !e.id) return;
-      MatchedLoctionCache[e.location] = e.id;
+    Inscription.map((e) => {
+      if (!e.location || !e.inscription) return;
+      const IsExist = MatchedLoctionCache[e.location];
+      if (!IsExist) {
+        MatchedLoctionCache[e.location] = [e.inscription];
+      } else {
+        MatchedLoctionCache[e.location].push(e.inscription);
+      }
     });
-
-    MatchedInscriptionLocation.map((e) => {
-      MatchedLoctionCache[e.location] = e.id;
-    });
-
-    const InputsHash: string[] = [];
 
     for (const transaction of blockData) {
       if (transaction.coinbase) continue;
-
       for (const txinputs of transaction.inputs) {
         const key = `${ReverseHash(txinputs.txid)}:${txinputs.vin}`;
         const MatchedInscriptionLocations = MatchedLoctionCache[key];
@@ -95,8 +105,6 @@ const inscriptionTransferWork = async (
 
     const TransactionOfInputs =
       await QueryInscriptions.LoadTransactionMatchedWithInput(InputsHash);
-
-    const InputTransactionSet: Record<string, TransactionWithBlock> = {};
 
     TransactionOfInputs.map((e) => {
       const Key = e.txid;
@@ -112,7 +120,8 @@ const inscriptionTransferWork = async (
     });
 
     /**Now we get all important data that is required,
-     * Now lets begin to track the Doginals Transfers with logic **/
+     * Now lets begin to track the Doginals Transfers
+     *  with logic **/
 
     for (const DoginalsTransfer of blockData) {
       if (DoginalsTransfer.coinbase) continue;
@@ -163,23 +172,26 @@ const inscriptionTransferWork = async (
           if (!InputSats) {
             // Now lets get Value
 
-            let IsTxinSameSet = InputTransactionSet[inputTxid];
+            let IsTxinSameSet: any = InputTransactionSet[inputTxid];
 
             if (!IsTxinSameSet) {
               const TransactionFromNode = await DogecoinCLI.GetTransaction(
                 inputTxid
               );
-              IsTxinSameSet = TransactionFromNode;
+
+              IsTxinSameSet = Decoder(TransactionFromNode);
             }
 
             if (!IsTxinSameSet) {
               throw new Error("Faild to get input tx data");
             }
 
-            IsTxinSameSet.outputs.map((e) => {
-              const KeyOutputValue = `${inputTxid}:${e?.index}`;
-              OutpuValueCache[KeyOutputValue] = e?.amount;
-            });
+            IsTxinSameSet.outputs.map(
+              (e: { amount: number; index: number }) => {
+                const KeyOutputValue = `${inputTxid}:${e?.index}`;
+                OutpuValueCache[KeyOutputValue] = e?.amount;
+              }
+            );
 
             InputSats = OutpuValueCache[KeySats];
           }
@@ -224,10 +236,6 @@ const inscriptionTransferWork = async (
           newowner = newOwner;
         }
 
-        console.log(
-          `New Location Update:- ${newlocation},, Inscription:- ${Inscription}`
-        );
-
         MatchedLoctionCache[newlocation] = MatchedLoctionCache[Inputkey];
         delete MatchedLoctionCache[Inputkey];
 
@@ -237,34 +245,38 @@ const inscriptionTransferWork = async (
           InputTransactionSet[DoginalsTransfer.txid] = DoginalsTransfer;
         }
 
-        const IsInscriptionInStoreQue = BlockInscriptionsSet.has(Inscription);
+        Inscription.map((inscription) => {
+          const IsInscriptionInStoreQue = BlockInscriptionsSet.has(inscription);
 
-        if (IsInscriptionInStoreQue) {
-          const InscriptionQue = BlockInscriptions.find(
-            (a) => a.id === Inscription && a.prehash === prehash
+          if (IsInscriptionInStoreQue) {
+            const InscriptionQue = BlockInscriptions.find(
+              (a) => a.id === inscription && a.prehash === prehash
+            );
+
+            if (!InscriptionQue) return;
+
+            InscriptionQue.location = newlocation;
+            InscriptionQue.owner = newowner;
+            return;
+          }
+
+          const isInscriptionRepeat = LoctionUpdateInscriptions.find(
+            (a) => a.inscriptionid === inscription
           );
 
-          if (!InscriptionQue) continue;
+          if (isInscriptionRepeat) {
+            isInscriptionRepeat.location = newlocation;
+            isInscriptionRepeat.owner = newowner;
 
-          InscriptionQue.location = newlocation;
-          InscriptionQue.owner = newowner;
-          continue;
-        }
+            return;
+          }
 
-        const isInscriptionRepeat = LoctionUpdateInscriptions.find(
-          (a) => a.inscriptionid === Inscription
-        );
-
-        if (isInscriptionRepeat) {
-          isInscriptionRepeat.location = newlocation;
-          isInscriptionRepeat.owner = newowner;
-        }
-
-        LoctionUpdateInscriptions.push({
-          location: newlocation,
-          owner: newowner,
-          inscriptionid: Inscription,
-          prelocation: prehash,
+          LoctionUpdateInscriptions.push({
+            location: newlocation,
+            owner: newowner,
+            inscriptionid: inscription,
+            prelocation: prehash,
+          });
         });
       }
     }

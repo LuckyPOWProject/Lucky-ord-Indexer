@@ -72,7 +72,11 @@ const inscriptionQuery = {
 
       const Query = { location: { $in: location } };
 
-      const data = await collection.find(Query).toArray();
+      const projection = { id: 1, location: 1 };
+
+      const data = await collection
+        .find(Query, { projection: projection })
+        .toArray();
 
       return data.length === 0 ? false : data;
     } catch (error) {

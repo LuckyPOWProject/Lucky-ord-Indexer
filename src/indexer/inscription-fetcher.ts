@@ -14,8 +14,6 @@ const inscriptionFetchandStore = async (
     const inscriptionInCompleteCache: Record<string, inscriptionIncomplete> =
       {};
 
-    const inscriptionCache: Record<string, inscriptionStoreModel> = {};
-
     const inscriptionData: inscriptionStoreModel[] = [];
 
     let pendinginscriptions: inscriptionIncomplete[] = [];
@@ -98,9 +96,11 @@ const inscriptionFetchandStore = async (
             };
             pendinginscriptions.push(inscriptionInCompleteCache[Location]);
           } else {
+            if (LocationCache.has(Location)) continue;
+
             LocationCache.add(Location);
 
-            inscriptionCache[Location] = {
+            const InscriptionModel = {
               prehash: inscriptionInInputs.previousHash,
               inscription: {
                 contentType: newDataHandler.inscription.contentType,
@@ -117,7 +117,7 @@ const inscriptionFetchandStore = async (
               minter: inscriptionMinter,
             };
 
-            inscriptionData.push(inscriptionCache[Location]);
+            inscriptionData.push(InscriptionModel);
           }
           continue;
         }
@@ -142,8 +142,12 @@ const inscriptionFetchandStore = async (
           );
           continue;
         }
+
+        if (LocationCache.has(Location)) continue; //same sats can't inscribe multiple inscription
+
         LocationCache.add(Location);
-        inscriptionCache[Location] = {
+
+        const InscriptionModel = {
           prehash: inscriptionInInputs?.previousHash,
           id: inscription_id,
           inscriptionNumber: 0,
@@ -159,19 +163,13 @@ const inscriptionFetchandStore = async (
           owner: inscriptionMinter,
           minter: inscriptionMinter,
         };
-        inscriptionData.push(inscriptionCache[Location]);
+        inscriptionData.push(InscriptionModel);
       }
     }
 
-    const DBQuery = [];
-
     if (pendinginscriptions.length !== 0) {
-      DBQuery.push(
-        await inscriptionQuery.storePendingInscriptions(pendinginscriptions)
-      );
+      await inscriptionQuery.storePendingInscriptions(pendinginscriptions);
     }
-
-    await Promise.all(DBQuery);
 
     return inscriptionData;
   } catch (error) {
