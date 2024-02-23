@@ -265,6 +265,9 @@ const inscriptionTransferWork = async (
 
             if (!InscriptionQue) return;
 
+            BlockLocationset.delete(InscriptionQue.location);
+            BlockInscriptionsSet.add(newlocation);
+
             InscriptionQue.location = newlocation;
             InscriptionQue.owner = newowner;
             return;
