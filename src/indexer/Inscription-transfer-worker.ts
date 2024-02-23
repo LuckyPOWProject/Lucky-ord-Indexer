@@ -280,8 +280,10 @@ const inscriptionTransferWork = async (
         });
       }
     }
-
-    await inscriptionQuery.UpdateInscriptionLocation(LoctionUpdateInscriptions); // update the inscriptions location
+    if (LoctionUpdateInscriptions.length)
+      await inscriptionQuery.UpdateInscriptionLocation(
+        LoctionUpdateInscriptions
+      ); // update the inscriptions location
 
     return {
       BlockInscriptions: BlockInscriptions,
