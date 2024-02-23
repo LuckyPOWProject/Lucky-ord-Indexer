@@ -24,6 +24,7 @@ export interface inscriptionStoreModel {
   index: number;
   prehash?: string;
   location: string;
+  multipush: boolean;
 }
 
 export interface inscriptionIncomplete {
