@@ -64,13 +64,14 @@ const DoginalsIndexer = async () => {
     const inscriptions = await inscriptionFetchandStore(ArragedBlockData);
 
     const TransactionInscriptions = await inscriptionTransferWork(
-      inscriptions,
+      inscriptions.inscriptions,
       ArragedBlockData
     );
 
     if (TransactionInscriptions?.BlockInscriptions.length) {
       const newInscriptionNumberStartIndex = await IndexInscriptions(
         TransactionInscriptions.BlockInscriptions,
+        inscriptions.pending,
         CurrentInscriptionNumber
       );
 

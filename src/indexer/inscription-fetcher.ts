@@ -7,9 +7,14 @@ import {
 import { OutputScriptToAddress } from "../utils/indexer-utlis";
 import DecodeInputScript from "../utils/decode-input-script";
 
+interface inscriptionFetchout {
+  pending: inscriptionIncomplete[];
+  inscriptions: inscriptionStoreModel[];
+}
+
 const inscriptionFetchandStore = async (
   data: TransactionWithBlock[]
-): Promise<inscriptionStoreModel[]> => {
+): Promise<inscriptionFetchout> => {
   try {
     const inscriptionInCompleteCache: Record<string, inscriptionIncomplete> =
       {};
@@ -81,6 +86,10 @@ const inscriptionFetchandStore = async (
             );
           }
 
+          if (LocationCache.has(Location)) continue;
+
+          LocationCache.add(Location);
+
           if (!inscriptionInInputs.isComplete) {
             inscriptionInCompleteCache[Location] = {
               inscription: {
@@ -96,10 +105,6 @@ const inscriptionFetchandStore = async (
             };
             pendinginscriptions.push(inscriptionInCompleteCache[Location]);
           } else {
-            if (LocationCache.has(Location)) continue;
-
-            LocationCache.add(Location);
-
             const InscriptionModel = {
               prehash: inscriptionInInputs.previousHash,
               inscription: {
@@ -124,6 +129,9 @@ const inscriptionFetchandStore = async (
 
         const inscriptionInCompleteCacheKey = Location;
 
+        if (LocationCache.has(Location)) continue; //same sats can't inscribe multiple inscription
+        LocationCache.add(Location);
+
         if (!inscriptionInInputs.isComplete) {
           inscriptionInCompleteCache[inscriptionInCompleteCacheKey] = {
             inscription: {
@@ -142,10 +150,6 @@ const inscriptionFetchandStore = async (
           );
           continue;
         }
-
-        if (LocationCache.has(Location)) continue; //same sats can't inscribe multiple inscription
-
-        LocationCache.add(Location);
 
         const InscriptionModel = {
           prehash: inscriptionInInputs?.previousHash,
@@ -171,7 +175,7 @@ const inscriptionFetchandStore = async (
       await inscriptionQuery.storePendingInscriptions(pendinginscriptions);
     }
 
-    return inscriptionData;
+    return { inscriptions: inscriptionData, pending: pendinginscriptions };
   } catch (error) {
     throw error;
   }

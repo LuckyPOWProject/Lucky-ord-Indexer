@@ -1,8 +1,12 @@
 import inscriptionQuery from "../shared/database/query-inscription";
-import { inscriptionStoreModel } from "../types/inscription-interface";
+import {
+  inscriptionIncomplete,
+  inscriptionStoreModel,
+} from "../types/inscription-interface";
 
 const IndexInscriptions = async (
   data: inscriptionStoreModel[],
+  pending: inscriptionIncomplete[],
   inscriptionNumberCount: number = 9
 ) => {
   try {
@@ -33,8 +37,34 @@ const IndexInscriptions = async (
 
       inscriptionNumberCount += 1;
     }
+
+    const SafePending: inscriptionIncomplete[] = [];
+    const LocationsPending = pending.map((e) => e.location);
+
+    const LocationMatchedInscriptionPending =
+      (await inscriptionQuery.LoadMatchLoctionInscriptions(LocationsPending)) ||
+      [];
+
+    const MatchedLocationHashPending = new Set(
+      LocationMatchedInscriptionPending.map((e) => e.location)
+    );
+
+    for (const pendingInscription of pending) {
+      const Location = pendingInscription.location;
+
+      if (MatchedLocationHashPending.has(Location)) continue; // in same sats you can't inscribe
+      SafePending.push({ ...pendingInscription });
+    }
+
+    const QPromise = [];
+
     if (SafeInscriptions.length)
-      await inscriptionQuery.storeInscription(SafeInscriptions);
+      QPromise.push(inscriptionQuery.storeInscription(SafeInscriptions));
+
+    if (SafePending.length)
+      QPromise.push(inscriptionQuery.storePendingInscriptions(SafePending));
+
+    await Promise.all(QPromise);
 
     return inscriptionNumberCount;
   } catch (error) {
