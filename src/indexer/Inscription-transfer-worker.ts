@@ -247,7 +247,7 @@ const inscriptionTransferWork = async (
          * was already stored or transfered throught
          */
 
-        const IsSameSatsInInscription = locationCache[newlocation];
+        const IsSameSatsInInscription = locationCache[prehash];
 
         if (IsSameSatsInInscription)
           invalidInscriptions.add(IsSameSatsInInscription);
