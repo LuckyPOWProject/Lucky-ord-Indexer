@@ -252,14 +252,6 @@ const inscriptionTransferWork = async (
         if (IsSameSatsInInscription)
           invalidInscriptions.add(IsSameSatsInInscription);
 
-        if (BlockLocationset.has(newlocation)) {
-          const InscriptionUpdate = BlockInscriptions.filter(
-            (a) => a.location !== newlocation
-          ); //remove it if its inscribed in same sats
-
-          BlockInscriptions = InscriptionUpdate;
-        }
-
         MatchedLoctionCache[newlocation] = MatchedLoctionCache[Inputkey];
 
         delete MatchedLoctionCache[Inputkey];
@@ -279,9 +271,6 @@ const inscriptionTransferWork = async (
             );
 
             if (!InscriptionQue) return;
-
-            BlockLocationset.delete(InscriptionQue.location);
-            BlockInscriptionsSet.add(newlocation);
 
             InscriptionQue.location = newlocation;
             InscriptionQue.owner = newowner;
