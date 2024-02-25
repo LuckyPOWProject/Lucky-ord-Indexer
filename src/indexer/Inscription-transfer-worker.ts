@@ -275,7 +275,7 @@ const inscriptionTransferWork = async (
 
           if (IsInscriptionInStoreQue) {
             const InscriptionQue = BlockInscriptions.find(
-              (a) => a.id === inscription && a.prehash === prehash
+              (a) => a.id === inscription
             );
 
             if (!InscriptionQue) return;
