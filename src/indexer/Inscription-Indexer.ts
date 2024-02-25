@@ -12,7 +12,7 @@ const IndexInscriptions = async (
 ) => {
   try {
     const SafeInscriptions: inscriptionStoreModel[] = [];
-
+    const IgnoredInscriptions: any[] = [];
     const Locations = data.map((e) => e.location);
 
     //Now we query all the inscription that are in this location
@@ -29,11 +29,18 @@ const IndexInscriptions = async (
 
       const Location = inscriptions.location;
 
-      if (MatchedLocationHash.has(Location)) continue; // in same sats you can't inscribe
+      if (MatchedLocationHash.has(Location)) {
+        IgnoredInscriptions.push({ id: inscriptions.id, step: 1 });
+        continue;
+      } // in same sats you can't inscribe
 
       if (!inscriptions.id) continue;
 
-      if (invalidInscriptions.has(inscriptions?.id)) continue;
+      if (invalidInscriptions.has(inscriptions?.id)) {
+        IgnoredInscriptions.push({ id: inscriptions.id, step: 2 });
+
+        continue;
+      }
 
       SafeInscriptions.push({
         ...inscriptions,
@@ -57,9 +64,16 @@ const IndexInscriptions = async (
     for (const pendingInscription of pending) {
       const Location = pendingInscription.location;
 
-      if (MatchedLocationHashPending.has(Location)) continue; // in same sats you can't inscribe
+      if (MatchedLocationHashPending.has(Location)) {
+        IgnoredInscriptions.push({ id: pendingInscription.id, step: 3 });
 
-      if (invalidInscriptions.has(pendingInscription.id)) continue;
+        continue;
+      } // in same sats you can't inscribe
+
+      if (invalidInscriptions.has(pendingInscription.id)) {
+        IgnoredInscriptions.push({ id: pendingInscription.id, step: 4 });
+        continue;
+      }
 
       SafePending.push({ ...pendingInscription });
     }
@@ -71,6 +85,12 @@ const IndexInscriptions = async (
 
     if (SafePending.length)
       QPromise.push(inscriptionQuery.storePendingInscriptions(SafePending));
+
+    if (IgnoredInscriptions.length) {
+      QPromise.push(
+        inscriptionQuery.PushIgnoredInscription(IgnoredInscriptions)
+      );
+    }
 
     await Promise.all(QPromise);
 
