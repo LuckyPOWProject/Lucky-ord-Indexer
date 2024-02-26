@@ -17,6 +17,8 @@ const OutpuValueCache: Record<string, number> = {};
 
 const coinbaseTransactions: Record<number, coinbaseTrasactionMeta> = {};
 
+const InputSatsSpentCache = new Set<string>();
+
 const inscriptionTransferWork = async (
   data: inscriptionStoreModel[],
   blockData: TransactionWithBlock[],
@@ -170,7 +172,10 @@ const inscriptionTransferWork = async (
 
         for (const inscriptionInputs of InscriptionLogicInput) {
           const inputTxid = ReverseHash(inscriptionInputs.txid);
+
           const KeySats = `${inputTxid}:${inscriptionInputs.vin}`;
+
+          if (InputSatsSpentCache.has(KeySats)) continue; // the sats is transfered
 
           let InputSats = OutpuValueCache[KeySats];
 
@@ -219,6 +224,8 @@ const inscriptionTransferWork = async (
           }
           CurrentOutputSum += OutputValue;
         }
+
+        InputSatsSpentCache.add(Inputkey);
 
         const Inscription = isInscriptionTransfer;
         const prehash = Inputkey;

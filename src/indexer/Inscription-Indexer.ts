@@ -37,7 +37,11 @@ const IndexInscriptions = async (
       if (!inscriptions.id) continue;
 
       if (invalidInscriptions.has(inscriptions?.id)) {
-        IgnoredInscriptions.push({ id: inscriptions.id, step: 2 });
+        IgnoredInscriptions.push({
+          id: inscriptions.id,
+          step: 2,
+          location: inscriptions.location,
+        });
 
         continue;
       }
