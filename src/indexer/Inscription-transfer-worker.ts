@@ -360,7 +360,7 @@ const inscriptionTransferWork = async (
              * if inscription is found in the array we update the field wit our
              * new updated data
              */
-            InscriptionInBlock.transferLocation = newlocation;
+            InscriptionInBlock.location = newlocation;
             InscriptionInBlock.offset = offset;
             InscriptionInBlock.owner = newowner;
 

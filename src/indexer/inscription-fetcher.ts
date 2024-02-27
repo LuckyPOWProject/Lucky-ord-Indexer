@@ -149,7 +149,6 @@ const inscriptionFetchandStore = async (
           txid: transactions.txid,
           time: transactions.time,
           block: transactions.blockNumber,
-          transferLocation: undefined,
           inscription: {
             contentType: inscription_contentType,
             data: inscription_data,
