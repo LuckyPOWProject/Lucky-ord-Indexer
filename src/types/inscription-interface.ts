@@ -22,6 +22,7 @@ export interface inscriptionStoreModel {
   owner?: string;
   minter?: string;
   index: number;
+  transferLocation?: string;
   prehash?: string;
   location: string;
   multipush: boolean;

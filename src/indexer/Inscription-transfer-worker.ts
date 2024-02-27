@@ -360,8 +360,7 @@ const inscriptionTransferWork = async (
              * if inscription is found in the array we update the field wit our
              * new updated data
              */
-
-            InscriptionInBlock.location = newlocation;
+            InscriptionInBlock.transferLocation = newlocation;
             InscriptionInBlock.offset = offset;
             InscriptionInBlock.owner = newowner;
 
@@ -408,6 +407,13 @@ const inscriptionTransferWork = async (
         }
       }
     }
+
+    if (LoctionUpdateInscriptions.length !== 0) {
+      await inscriptionQuery.UpdateInscriptionLocation(
+        LoctionUpdateInscriptions
+      );
+    }
+
     return {
       BlockInscriptions: BlockInscriptions,
       invalidInscriptionsIds: invalidInscriptions,

@@ -48,6 +48,9 @@ const IndexInscriptions = async (
 
       SafeInscriptions.push({
         ...inscriptions,
+        location: inscriptions.transferLocation
+          ? inscriptions.transferLocation
+          : Location,
         inscriptionNumber: inscriptionNumberCount,
       });
 
