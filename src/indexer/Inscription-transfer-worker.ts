@@ -369,6 +369,8 @@ const inscriptionTransferWork = async (
               BlockInscriptions = BlockInscriptions.filter(
                 (a) => a.location !== newlocation
               );
+
+              InscriptionOnBlock.delete(InscriptionId);
               continue;
             }
 
