@@ -314,6 +314,19 @@ const inscriptionTransferWork = async (
             MatchedLoctionCache[newlocation] = [`${InscriptionId}:${offset}`];
           }
 
+          /*****
+           *
+           * Now we can store the currect transaction to get input values in
+           * futer transaction featching, so we don't need to get it from node
+           */
+
+          const isTransactionInCache =
+            InputTransactionSet[DoginalsTransfer.txid];
+
+          if (!isTransactionInCache) {
+            InputTransactionSet[DoginalsTransfer.txid] = DoginalsTransfer;
+          }
+
           /****
            * First we check if the inscription that was just inscribed
            * was transferd in same block, If it transfer then we just update
