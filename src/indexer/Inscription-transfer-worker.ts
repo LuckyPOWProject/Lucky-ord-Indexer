@@ -356,8 +356,7 @@ const inscriptionTransferWork = async (
              * there might be bugs in our code...
              */
 
-            if (!InscriptionInBlock)
-              throw new Error("Inscription was not found");
+            if (!InscriptionInBlock) continue;
 
             /**
              * If the inscribed location sats already has inscription
@@ -370,7 +369,6 @@ const inscriptionTransferWork = async (
                 (a) => a.location !== newlocation
               );
 
-              InscriptionOnBlock.delete(InscriptionId);
               continue;
             }
 
