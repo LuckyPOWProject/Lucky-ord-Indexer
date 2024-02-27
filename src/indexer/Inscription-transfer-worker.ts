@@ -237,7 +237,7 @@ const inscriptionTransferWork = async (
           for (const [i, Outputs] of DoginalsTransfer.outputs.entries()) {
             const OutputValue = Outputs.amount;
 
-            if (OutputValue + CurrentOutputSum > SumInputValues) {
+            if (OutputValue + CurrentOutputSum >= SumInputValues) {
               newInscriptionIndex = i;
               offset = SumInputValues - CurrentOutputSum;
               break;
