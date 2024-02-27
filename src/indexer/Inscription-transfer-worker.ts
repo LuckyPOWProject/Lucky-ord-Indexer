@@ -47,6 +47,8 @@ const inscriptionTransferWork = async (
 
     const invalidInscriptions = new Set<string>();
 
+    const LocationSatsTransfered = new Set<string>();
+
     for (const transaction of blockData) {
       //We store the coinbase block, because if the inscription is burned then it goes to miner
       if (transaction.coinbase) {
@@ -259,6 +261,8 @@ const inscriptionTransferWork = async (
             newowner = newOwner;
           }
 
+          LocationSatsTransfered.add(newlocation);
+
           /**
            * Now we check if the location where the inscription was inscribed was
            * used in doginals transfer or not, if it was used then it will be
@@ -355,11 +359,25 @@ const inscriptionTransferWork = async (
             if (!InscriptionInBlock)
               throw new Error("Inscription was not found");
 
+            /**
+             * If the inscribed location sats already has inscription
+             * transafered then its invalid inscription
+             *
+             */
+
+            if (LocationSatsTransfered.has(newlocation)) {
+              BlockInscriptions = BlockInscriptions.filter(
+                (a) => a.location !== newlocation
+              );
+              continue;
+            }
+
             /***
              *
              * if inscription is found in the array we update the field wit our
              * new updated data
              */
+
             InscriptionInBlock.location = newlocation;
             InscriptionInBlock.offset = offset;
             InscriptionInBlock.owner = newowner;
@@ -408,7 +426,7 @@ const inscriptionTransferWork = async (
       }
     }
 
-    if (LoctionUpdateInscriptions.length !== 0) {
+    if (LoctionUpdateInscriptions.length) {
       await inscriptionQuery.UpdateInscriptionLocation(
         LoctionUpdateInscriptions
       );
