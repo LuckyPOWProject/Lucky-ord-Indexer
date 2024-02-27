@@ -25,6 +25,7 @@ export interface inscriptionStoreModel {
   prehash?: string;
   location: string;
   multipush: boolean;
+  offset: number;
 }
 
 export interface inscriptionIncomplete {
@@ -38,5 +39,6 @@ export interface LoctionUpdates {
   inscriptionid: string;
   location: string;
   prelocation: string;
+  offset: number;
   owner: string;
 }

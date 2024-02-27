@@ -32,7 +32,9 @@ export const ReverseHash = (hash: string): string => {
 export const GetInscriptionUpdateQuery = (data: LoctionUpdates[]) => {
   const Query = data.map((e) => {
     const filter = { id: e.inscriptionid, location: e.prelocation };
-    const update = { $set: { location: e.location, owner: e.owner } };
+    const update = {
+      $set: { location: e.location, owner: e.owner, offset: e.offset },
+    };
 
     return {
       updateOne: { filter: filter, update: update },

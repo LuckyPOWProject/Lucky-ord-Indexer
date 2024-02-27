@@ -17,8 +17,6 @@ const OutpuValueCache: Record<string, number> = {};
 
 const coinbaseTransactions: Record<number, coinbaseTrasactionMeta> = {};
 
-const InputSatsSpentCache = new Set<string>();
-
 const inscriptionTransferWork = async (
   data: inscriptionStoreModel[],
   blockData: TransactionWithBlock[],
@@ -37,9 +35,7 @@ const inscriptionTransferWork = async (
 
     let BlockInscriptions = data;
 
-    const BlockInscriptionsSet = new Set(BlockInscriptions.map((e) => e.id));
-
-    const BlockLocationset = new Set(BlockInscriptions.map((e) => e.location));
+    const InscriptionOnBlock = new Set(BlockInscriptions.map((e) => e.id));
 
     const InputIds: string[] = [];
 
@@ -75,25 +71,32 @@ const inscriptionTransferWork = async (
       (await inscriptionQuery.LoadMatchLoctionInscriptions(InputIds)) || [];
 
     const Inscription = MatchedInscriptionLocation.map(
-      (e): { inscription: string; location: string } => {
+      (e): { inscription: string; location: string; offset: number } => {
         return {
           inscription: e.id,
           location: e.location,
+          offset: e.offset,
         };
       }
     ).concat(
-      BlockInscriptions.map((e): { inscription: string; location: string } => {
-        return { inscription: e?.id || "", location: e.location };
-      })
+      BlockInscriptions.map(
+        (e): { inscription: string; location: string; offset: number } => {
+          return {
+            inscription: e?.id || "",
+            location: e.location,
+            offset: e.offset,
+          };
+        }
+      )
     );
 
     Inscription.map((e) => {
       if (!e.location || !e.inscription) return;
       const IsExist = MatchedLoctionCache[e.location];
       if (!IsExist) {
-        MatchedLoctionCache[e.location] = [e.inscription];
+        MatchedLoctionCache[e.location] = [`${e.inscription}:${e.offset}`];
       } else {
-        MatchedLoctionCache[e.location].push(e.inscription);
+        MatchedLoctionCache[e.location].push(`${e.inscription}:${e.offset}`);
       }
     });
 
@@ -175,8 +178,6 @@ const inscriptionTransferWork = async (
 
           const KeySats = `${inputTxid}:${inscriptionInputs.vin}`;
 
-          if (InputSatsSpentCache.has(KeySats)) continue; // the sats is transfered
-
           let InputSats = OutpuValueCache[KeySats];
 
           if (!InputSats) {
@@ -211,103 +212,189 @@ const inscriptionTransferWork = async (
           inputValues.push(InputSats);
         }
 
-        const SumInputValues = inputValues.reduce((a, b) => a + b, 0) + 1;
-
-        let newInscriptionIndex;
-        let CurrentOutputSum = 0;
-
-        for (const [i, Outputs] of DoginalsTransfer.outputs.entries()) {
-          const OutputValue = Outputs.amount;
-          if (OutputValue + CurrentOutputSum > SumInputValues) {
-            newInscriptionIndex = i;
-            break;
-          }
-          CurrentOutputSum += OutputValue;
-        }
-
-        InputSatsSpentCache.add(Inputkey);
-
-        const Inscription = isInscriptionTransfer;
-        const prehash = Inputkey;
+        /**
+         * Now we need to get all the inscription that matched with the location
+         * and loop over it
+         */
 
         const BlockCoinBase =
           coinbaseTransactions[DoginalsTransfer.blockNumber];
 
-        let newlocation = BlockCoinBase.location;
-        let newowner = BlockCoinBase.address;
+        for (const inscriptions of isInscriptionTransfer) {
+          const inscriptionData = inscriptions.split(":");
+          const InscriptionId = inscriptionData[0];
+          const offsetnum = Number(inscriptionData[1]);
 
-        if (newInscriptionIndex !== undefined) {
-          const newLoctionOutput =
-            DoginalsTransfer.outputs[newInscriptionIndex];
+          const SumInputValues =
+            inputValues.reduce((a, b) => a + b, 0) + offsetnum;
 
-          const newLocation = `${DoginalsTransfer.txid}:${newLoctionOutput.index}`;
+          let newInscriptionIndex;
+          let CurrentOutputSum = 0;
+          let offset = 0;
 
-          const newOwner = OutputScriptToAddress(newLoctionOutput.script);
+          for (const [i, Outputs] of DoginalsTransfer.outputs.entries()) {
+            const OutputValue = Outputs.amount;
 
-          newlocation = newLocation;
-          newowner = newOwner;
-        }
+            if (OutputValue + CurrentOutputSum > SumInputValues) {
+              newInscriptionIndex = i;
+              offset = SumInputValues - CurrentOutputSum;
+              break;
+            }
 
-        /**
-         * Now we check if the location sats where the inscription
-         * was inscriped was in the location sats where the inscription
-         * was already stored or transfered throught
-         */
+            CurrentOutputSum += OutputValue;
+          }
 
-        const IsSameSatsInInscription = locationCache[newlocation];
+          let newlocation = BlockCoinBase.location;
+          let newowner = BlockCoinBase.address;
 
-        if (IsSameSatsInInscription)
-          invalidInscriptions.add(IsSameSatsInInscription);
+          if (newInscriptionIndex !== undefined) {
+            const newLoctionOutput =
+              DoginalsTransfer.outputs[newInscriptionIndex];
 
-        MatchedLoctionCache[newlocation] = MatchedLoctionCache[Inputkey];
+            const newLocation = `${DoginalsTransfer.txid}:${newLoctionOutput.index}`;
 
-        delete MatchedLoctionCache[Inputkey];
+            const newOwner = OutputScriptToAddress(newLoctionOutput.script);
 
-        const isTransactioninCache = InputTransactionSet[DoginalsTransfer.txid];
+            newlocation = newLocation;
+            newowner = newOwner;
+          }
 
-        if (!isTransactioninCache) {
-          InputTransactionSet[DoginalsTransfer.txid] = DoginalsTransfer;
-        }
+          /**
+           * Now we check if the location where the inscription was inscribed was
+           * used in doginals transfer or not, if it was used then it will be
+           * invalid doginals inscribe, because you can't inscribe same doginals
+           * in same sats
+           */
 
-        Inscription.map((inscription) => {
-          const IsInscriptionInStoreQue = BlockInscriptionsSet.has(inscription);
+          const InscriptionOnLocation = locationCache[newlocation];
 
-          if (IsInscriptionInStoreQue) {
-            const InscriptionQue = BlockInscriptions.find(
-              (a) => a.id === inscription
+          if (InscriptionOnLocation) {
+            invalidInscriptions.add(InscriptionOnLocation);
+          }
+
+          /***
+           *
+           * As we get now the new location for inscription, now we can update in
+           * match location cache that there is location for particular inscription,
+           * now we can delete the match location cache of previous match inscription input
+           * key and add new location cache with new location
+           */
+
+          isInscriptionTransfer.filter((a) => a !== inscriptions); //delete the inscr... from that location
+
+          /***
+           * If there is no inscription left in that particular location key
+           * the we need to delete the record
+           */
+
+          if (isInscriptionTransfer.length === 0)
+            delete MatchedLoctionCache[Inputkey];
+
+          /***
+           *
+           * Now the inscription is moved to new location right, we need add new
+           * record in our cache to keep in track of inscription transfer, first
+           * check if the new location is recored in cache or not,
+           */
+
+          const isLocationInCache = MatchedLoctionCache[newlocation];
+
+          if (isLocationInCache) {
+            /**
+             * If the location is already recorded then just push
+             * the inscriptionid and offset
+             */
+
+            isLocationInCache.push(`${InscriptionId}:${offset}`);
+          } else {
+            /**
+             * If the location is not already recorded then record
+             * the new data in cache
+             */
+            MatchedLoctionCache[newlocation] = [`${InscriptionId}:${offset}`];
+          }
+
+          /****
+           * First we check if the inscription that was just inscribed
+           * was transferd in same block, If it transfer then we just update
+           * it location, offset, owner within the inscription array so we
+           * don't need to run the update query for it
+           */
+
+          const IsInscribedInSameBlock = InscriptionOnBlock.has(InscriptionId);
+
+          if (IsInscribedInSameBlock) {
+            /**
+             * Now we need to search the inscription from the data array and
+             * just update the location, offset and new owner field
+             */
+
+            const InscriptionInBlock = BlockInscriptions.find(
+              (a) => a.id === InscriptionId
             );
 
-            if (!InscriptionQue) return;
+            /***
+             *
+             * If the inscription is not found in array we throw the error because
+             * there might be bugs in our code...
+             */
 
-            InscriptionQue.location = newlocation;
-            InscriptionQue.owner = newowner;
-            return;
+            if (!InscriptionInBlock)
+              throw new Error("Inscription was not found");
+
+            /***
+             *
+             * if inscription is found in the array we update the field wit our
+             * new updated data
+             */
+
+            InscriptionInBlock.location = newlocation;
+            InscriptionInBlock.offset = offset;
+            InscriptionInBlock.owner = newowner;
+
+            continue;
           }
 
-          const isInscriptionRepeat = LoctionUpdateInscriptions.find(
-            (a) => a.inscriptionid === inscription
+          /***
+           * Now we need to check if the inscription is already ready to
+           * be updated in LocationUpdateInscription array, if there is
+           * inscription then we just update its locatio, offset, owner state
+           * with new value
+           */
+
+          const isLocationUpdateQue = LoctionUpdateInscriptions.find(
+            (a) => a.inscriptionid === InscriptionId
           );
 
-          if (isInscriptionRepeat) {
-            isInscriptionRepeat.location = newlocation;
-            isInscriptionRepeat.owner = newowner;
-            return;
+          /***
+           *
+           * If inscription is on location update que just update the
+           * array fields...
+           */
+
+          if (isLocationUpdateQue) {
+            isLocationUpdateQue.location = newlocation;
+            isLocationUpdateQue.offset = offset;
+            isLocationUpdateQue.owner = newowner;
+            continue;
           }
 
+          /***
+           *
+           * If inscription is not on location update que just
+           * push new inscription location update que
+           */
+
           LoctionUpdateInscriptions.push({
+            inscriptionid: InscriptionId,
             location: newlocation,
+            offset: offset,
+            prelocation: Inputkey,
             owner: newowner,
-            inscriptionid: inscription,
-            prelocation: prehash,
           });
-        });
+        }
       }
     }
-    if (LoctionUpdateInscriptions.length)
-      await inscriptionQuery.UpdateInscriptionLocation(
-        LoctionUpdateInscriptions
-      ); // update the inscriptions location
-
     return {
       BlockInscriptions: BlockInscriptions,
       invalidInscriptionsIds: invalidInscriptions,
