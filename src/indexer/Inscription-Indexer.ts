@@ -46,11 +46,15 @@ const IndexInscriptions = async (
         continue;
       }
 
+      const updateLocation = inscriptions.transferLocation
+        ? inscriptions.transferLocation
+        : Location;
+
+      delete inscriptions.transferLocation;
+
       SafeInscriptions.push({
         ...inscriptions,
-        location: inscriptions.transferLocation
-          ? inscriptions.transferLocation
-          : Location,
+        location: updateLocation,
         inscriptionNumber: inscriptionNumberCount,
       });
 
