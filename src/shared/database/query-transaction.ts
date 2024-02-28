@@ -3,6 +3,20 @@ import SystemConfig from "../system/config";
 import GetMongoConnection from "./connection-provider";
 
 const QueryInscriptions = {
+  LoadTransactions: async (fromBlock: number, toBlock: number) => {
+    try {
+      const connection = await GetMongoConnection();
+      const db = connection.db(SystemConfig.database);
+      const collection = db.collection(SystemConfig.collectionTransaction);
+
+      const Query = { blockNumber: { $gte: fromBlock, $lte: toBlock } };
+      const data = await collection.find(Query).toArray();
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  },
   IndexTransactions: async (data: TransactionWithBlock[]) => {
     try {
       const connection = await GetMongoConnection();

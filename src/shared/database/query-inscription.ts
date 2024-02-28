@@ -97,17 +97,6 @@ const inscriptionQuery = {
       throw error;
     }
   },
-  PushIgnoredInscription: async (data: any[]) => {
-    try {
-      const conn = await GetMongoConnection();
-      const db = conn.db(SystemConfig.database);
-      const collection = db.collection(`Ignored`);
-
-      await collection.insertMany(data);
-    } catch (error) {
-      throw error;
-    }
-  },
 };
 
 export default inscriptionQuery;
