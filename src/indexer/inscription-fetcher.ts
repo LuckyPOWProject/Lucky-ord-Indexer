@@ -57,11 +57,8 @@ const inscriptionFetchandStore = async (
 
         let InscriptionComplete = inscriptionInInputs.isComplete;
 
-        let wasMulti = false;
-
         if (inscriptionInInputs.IsremaingChunkPush) {
           //Now lets get the prevous hash used
-          wasMulti = true;
           if (!inscriptionInInputs.previousHash) continue;
 
           const PushinSameBatch =
@@ -157,7 +154,6 @@ const inscriptionFetchandStore = async (
         });
       }
     }
-
     return {
       locations: LocationTracker,
       pending: pendinginscriptions,

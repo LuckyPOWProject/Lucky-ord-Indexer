@@ -69,7 +69,10 @@ const DoginalsIndexer = async () => {
       inscriptions.locations
     );
 
-    if (TransactionInscriptions?.BlockInscriptions.length) {
+    if (
+      TransactionInscriptions?.BlockInscriptions.length ||
+      inscriptions.pending
+    ) {
       const newInscriptionNumberStartIndex = await IndexInscriptions(
         TransactionInscriptions.BlockInscriptions,
         inscriptions.pending,

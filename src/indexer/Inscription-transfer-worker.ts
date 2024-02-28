@@ -47,8 +47,6 @@ const inscriptionTransferWork = async (
 
     const invalidInscriptions = new Set<string>();
 
-    const LocationSatsTransfered = new Set<string>();
-
     for (const transaction of blockData) {
       //We store the coinbase block, because if the inscription is burned then it goes to miner
       if (transaction.coinbase) {
@@ -94,6 +92,7 @@ const inscriptionTransferWork = async (
 
     Inscription.map((e) => {
       if (!e.location || !e.inscription) return;
+
       const IsExist = MatchedLoctionCache[e.location];
       if (!IsExist) {
         MatchedLoctionCache[e.location] = [`${e.inscription}:${e.offset}`];
@@ -371,12 +370,6 @@ const inscriptionTransferWork = async (
             InscriptionInBlock.offset = offset;
             InscriptionInBlock.owner = newowner;
 
-            // if (
-            //   InscriptionId ===
-            //   "622aadcce02ad11f7bf110340807d61a3f7d4d54b6b5180085cf19d16b3d2270i0"
-            // ) {
-            //   console.log(InscriptionInBlock);
-            // }
             continue;
           }
 
