@@ -1,16 +1,22 @@
+import IndexerQuery from "../shared/database/query-indexer";
 import BlockIndexer from "./block-indexer/Block-Indexer";
 import inscriptionIndex from "./ordinals-inscriptions/Inscription-indexer";
 
 const DoginalsIndexer = async () => {
-  let startBlock = 4610731;
+  //Load the indexer data
 
-  let TotalBlockIndex = 1008;
+  const IndexerStatus = await IndexerQuery.LoadIndexerStatus();
 
-  let InscriptionFetchingQue = 1000;
+  let startBlock = IndexerStatus.LastTransactionIndexedBlock;
 
-  let inscriptionIndexedBlock = 4609723;
+  let TotalBlockIndex = IndexerStatus.TotalBlockIndex;
+
+  let InscriptionFetchingQue = 5000; //default
+
+  let inscriptionIndexedBlock = IndexerStatus.LastInscriptionIndexedBlock;
 
   let currentInscriptioNumber = 0;
+
   while (1) {
     /**
      *
@@ -35,28 +41,31 @@ const DoginalsIndexer = async () => {
 
       inscriptionIndexedBlock = inscriptionBlockIndexed.nextStartBlock + 1;
 
-      console.log(
-        `Inscription Index untill Block:- ${inscriptionIndexedBlock}, Block Scanned:- ${BlockScanned},  Block Left = ${
-          TotalBlockIndex - BlockScanned
-        }`
-      );
+      await IndexerQuery.UpdateTotalBlockIndex(TotalBlockIndex - BlockScanned);
 
       if (BlockScanned === TotalBlockIndex) {
         inscriptionIndexedBlock -= 1;
 
         TotalBlockIndex = 0;
       }
+
+      await IndexerQuery.UpdateLastInscriptionIndexedBlock(
+        inscriptionIndexedBlock
+      );
       continue;
     }
 
     const NextBlock = await BlockIndexer(startBlock);
 
-    TotalBlockIndex += 12;
+    await IndexerQuery.UpdateLastTransactionIndexedBlock(NextBlock.nextBlock); //nextstarting block
+
+    TotalBlockIndex = NextBlock.scanRange;
+
+    await IndexerQuery.UpdateTotalBlockIndex(TotalBlockIndex);
+
     //Update the next block
-    console.log(
-      `Block Fetched: ${NextBlock - 1}, TotalBlock Scanned: ${TotalBlockIndex}`
-    );
-    startBlock = NextBlock;
+
+    startBlock = NextBlock.nextBlock;
   }
 };
 

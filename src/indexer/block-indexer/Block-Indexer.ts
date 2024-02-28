@@ -11,7 +11,9 @@ import type { Block } from "../../types/dogecoin-interface";
 import BlockHeaderDecoder from "../../utils/blockheader-decoder";
 import IndexBlockTransaction from "./Index-Block-transaction";
 
-const BlockIndexer = async (startBlock: number): Promise<number> => {
+const BlockIndexer = async (
+  startBlock: number
+): Promise<{ nextBlock: number; scanRange: number }> => {
   await nodeConnection.connect();
 
   // Block that we want to index every call
@@ -104,7 +106,10 @@ const BlockIndexer = async (startBlock: number): Promise<number> => {
 
   // Now return the new block to start indexing from
 
-  return BlocksToScan[BlocksToScan.length - 1] + 1; //Last block from array
+  return {
+    nextBlock: BlocksToScan[BlocksToScan.length - 1] + 1,
+    scanRange: MaxScan,
+  }; //Last block from array
 };
 
 export default BlockIndexer;

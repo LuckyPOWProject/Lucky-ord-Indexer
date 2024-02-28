@@ -14,7 +14,9 @@ const SystemConfig = {
   collectionInscription: process.env.collectionInscription || "",
   collectionTransaction: process.env.collectionTransaction || "",
   collectionPendingInscription: process.env.collectionPendingInscription || "",
+  collectionIndexer: process.env.collectionIndexer || "",
   maxscan: 12,
+  startIndex: process.env.startIndex,
 };
 
 export default SystemConfig;
