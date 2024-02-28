@@ -93,10 +93,6 @@ const inscriptionQuery = {
       const Query = GetInscriptionUpdateQuery(data);
 
       const updatesRes = (await collection.bulkWrite(Query)).modifiedCount;
-
-      if (Query.length !== updatesRes) {
-        throw new Error("Faild to update some inscriptions...");
-      }
     } catch (error) {
       throw error;
     }
