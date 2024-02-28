@@ -261,8 +261,6 @@ const inscriptionTransferWork = async (
             newowner = newOwner;
           }
 
-          LocationSatsTransfered.add(newlocation);
-
           /**
            * Now we check if the location where the inscription was inscribed was
            * used in doginals transfer or not, if it was used then it will be
@@ -356,9 +354,7 @@ const inscriptionTransferWork = async (
              * there might be bugs in our code...
              */
 
-            if (!InscriptionInBlock)
-              throw new Error("Inscription was not found");
-
+            if (!InscriptionInBlock) continue;
             /**
              * If the inscribed location sats already has inscription
              * transafered then its invalid inscription
@@ -379,6 +375,8 @@ const inscriptionTransferWork = async (
              * new updated data
              */
 
+            LocationSatsTransfered.add(newlocation);
+
             InscriptionInBlock.location = newlocation;
             InscriptionInBlock.offset = offset;
             InscriptionInBlock.owner = newowner;
@@ -392,6 +390,8 @@ const inscriptionTransferWork = async (
            * inscription then we just update its locatio, offset, owner state
            * with new value
            */
+
+          LocationSatsTransfered.add(newlocation);
 
           const isLocationUpdateQue = LoctionUpdateInscriptions.find(
             (a) => a.inscriptionid === InscriptionId

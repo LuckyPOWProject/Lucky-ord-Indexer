@@ -154,7 +154,6 @@ const inscriptionFetchandStore = async (
             data: inscription_data,
           },
           offset: 0,
-          multipush: wasMulti,
         });
       }
     }
