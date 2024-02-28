@@ -1,6 +1,6 @@
-import QueryInscriptions from "../shared/database/query-transaction";
-import { Block, TransactionWithBlock } from "../types/dogecoin-interface";
-const ArrageBlockTransaction = async (data: Block[]) => {
+import QueryInscriptions from "../../shared/database/query-transaction";
+import { Block, TransactionWithBlock } from "../../types/dogecoin-interface";
+const IndexBlockTransaction = async (data: Block[]) => {
   const ArrageBlockTransactionData: TransactionWithBlock[] = [];
 
   for (const blockData of data.sort((a, b) => a.number - b.number)) {
@@ -32,8 +32,6 @@ const ArrageBlockTransaction = async (data: Block[]) => {
   }
 
   await QueryInscriptions.IndexTransactions(ArrageBlockTransactionData);
-
-  return ArrageBlockTransactionData;
 };
 
-export default ArrageBlockTransaction;
+export default IndexBlockTransaction;

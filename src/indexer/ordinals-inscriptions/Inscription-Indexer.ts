@@ -1,8 +1,8 @@
-import inscriptionQuery from "../shared/database/query-inscription";
+import inscriptionQuery from "../../shared/database/query-inscription";
 import {
   inscriptionIncomplete,
   inscriptionStoreModel,
-} from "../types/inscription-interface";
+} from "../../types/inscription-interface";
 
 const IndexInscriptions = async (
   data: inscriptionStoreModel[],

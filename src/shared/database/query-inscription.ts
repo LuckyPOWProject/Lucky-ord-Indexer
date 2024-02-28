@@ -92,7 +92,7 @@ const inscriptionQuery = {
 
       const Query = GetInscriptionUpdateQuery(data);
 
-      const updatesRes = (await collection.bulkWrite(Query)).modifiedCount;
+      await collection.bulkWrite(Query);
     } catch (error) {
       throw error;
     }

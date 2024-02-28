@@ -1,11 +1,11 @@
-import inscriptionQuery from "../shared/database/query-inscription";
-import { TransactionWithBlock } from "../types/dogecoin-interface";
+import inscriptionQuery from "../../shared/database/query-inscription";
+import { TransactionWithBlock } from "../../types/dogecoin-interface";
 import {
   inscriptionIncomplete,
   inscriptionStoreModel,
-} from "../types/inscription-interface";
-import { OutputScriptToAddress } from "../utils/indexer-utlis";
-import DecodeInputScript from "../utils/decode-input-script";
+} from "../../types/inscription-interface";
+import { OutputScriptToAddress } from "../../utils/indexer-utlis";
+import DecodeInputScript from "../../utils/decode-input-script";
 
 interface inscriptionFetchout {
   pending: inscriptionIncomplete[];

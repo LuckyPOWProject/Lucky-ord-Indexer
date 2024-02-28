@@ -1,17 +1,17 @@
-import inscriptionQuery from "../shared/database/query-inscription";
-import QueryInscriptions from "../shared/database/query-transaction";
+import inscriptionQuery from "../../shared/database/query-inscription";
+import QueryInscriptions from "../../shared/database/query-transaction";
 import {
   TransactionWithBlock,
   coinbaseTrasactionMeta,
-} from "../types/dogecoin-interface";
-import { inscriptionStoreModel } from "../types/inscription-interface";
+} from "../../types/dogecoin-interface";
+import { inscriptionStoreModel } from "../../types/inscription-interface";
 import Decoder, {
   OutputScriptToAddress,
   ReverseHash,
-} from "../utils/indexer-utlis";
-import { LoctionUpdates } from "../types/inscription-interface";
-import DogecoinCore from "../api/dogecoin-core-rpc";
-import SystemConfig from "../shared/system/config";
+} from "../../utils/indexer-utlis";
+import { LoctionUpdates } from "../../types/inscription-interface";
+import DogecoinCore from "../../api/dogecoin-core-rpc";
+import SystemConfig from "../../shared/system/config";
 
 const OutpuValueCache: Record<string, number> = {};
 
