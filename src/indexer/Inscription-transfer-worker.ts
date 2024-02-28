@@ -237,7 +237,7 @@ const inscriptionTransferWork = async (
           for (const [i, Outputs] of DoginalsTransfer.outputs.entries()) {
             const OutputValue = Outputs.amount;
 
-            if (OutputValue + CurrentOutputSum >= SumInputValues) {
+            if (OutputValue + CurrentOutputSum > SumInputValues) {
               newInscriptionIndex = i;
               offset = SumInputValues - CurrentOutputSum;
               break;
@@ -361,26 +361,22 @@ const inscriptionTransferWork = async (
              *
              */
 
-            if (LocationSatsTransfered.has(newlocation)) {
-              BlockInscriptions = BlockInscriptions.filter(
-                (a) => a.location !== newlocation
-              );
-              InscriptionOnBlock.delete(InscriptionId);
-              continue;
-            }
-
             /***
              *
              * if inscription is found in the array we update the field wit our
              * new updated data
              */
 
-            LocationSatsTransfered.add(newlocation);
-
             InscriptionInBlock.location = newlocation;
             InscriptionInBlock.offset = offset;
             InscriptionInBlock.owner = newowner;
 
+            // if (
+            //   InscriptionId ===
+            //   "622aadcce02ad11f7bf110340807d61a3f7d4d54b6b5180085cf19d16b3d2270i0"
+            // ) {
+            //   console.log(InscriptionInBlock);
+            // }
             continue;
           }
 
@@ -390,8 +386,6 @@ const inscriptionTransferWork = async (
            * inscription then we just update its locatio, offset, owner state
            * with new value
            */
-
-          LocationSatsTransfered.add(newlocation);
 
           const isLocationUpdateQue = LoctionUpdateInscriptions.find(
             (a) => a.inscriptionid === InscriptionId

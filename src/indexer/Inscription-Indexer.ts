@@ -13,26 +13,11 @@ const IndexInscriptions = async (
   try {
     const SafeInscriptions: inscriptionStoreModel[] = [];
     const IgnoredInscriptions: any[] = [];
-    const Locations = data.map((e) => e.location);
-
-    //Now we query all the inscription that are in this location
-
-    const LocationMatchedInscription =
-      (await inscriptionQuery.LoadMatchLoctionInscriptions(Locations)) || [];
-
-    const MatchedLocationHash = new Set(
-      LocationMatchedInscription.map((e) => e.location)
-    );
 
     for (const inscriptions of data) {
       delete inscriptions.prehash;
 
       const Location = inscriptions.location;
-
-      if (MatchedLocationHash.has(Location)) {
-        IgnoredInscriptions.push({ id: inscriptions.id, step: 1 });
-        continue;
-      } // in same sats you can't inscribe
 
       if (!inscriptions.id) continue;
 
@@ -42,7 +27,6 @@ const IndexInscriptions = async (
           step: 2,
           location: inscriptions.location,
         });
-
         continue;
       }
 
