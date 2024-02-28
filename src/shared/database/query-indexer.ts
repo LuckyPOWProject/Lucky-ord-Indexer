@@ -19,6 +19,8 @@ const IndexerQuery = {
       };
 
       await collection.insertOne(data);
+
+      return data;
     } catch (error) {
       throw error;
     }
@@ -31,14 +33,9 @@ const IndexerQuery = {
       const data = await collection.find({}).toArray();
 
       if (!data.length) {
-        await IndexerQuery.initIndexer();
+        const defaultdata = await IndexerQuery.initIndexer();
 
-        return {
-          LastInscriptionIndexedBlock: 0,
-          LatestBlock: 0,
-          LastTransactionIndexedBlock: 0,
-          TotalBlockIndex: 0,
-        };
+        return defaultdata;
       }
 
       return {
