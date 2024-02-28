@@ -7,7 +7,7 @@ const SystemConfig = {
   host: process.env.host || "",
   port: Number(process.env.port) || 22555,
   password: process.env.password || "",
-  user: process.env.username || "",
+  user: process.env.rpcuser || "",
 
   mongAuth: process.env.url || "",
   database: process.env.database || "",
