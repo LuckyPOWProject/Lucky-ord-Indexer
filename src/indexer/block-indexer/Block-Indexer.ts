@@ -64,15 +64,29 @@ const BlockIndexer = async (startBlock: number): Promise<number> => {
   if (ValidBlockPromises.length !== BlocksToScan.length)
     throw new Error("Block Length and Hex length invalid");
 
+  //  Now lets get the block raw hex data for all the block hash
+
+  const BlockHexData = await Promise.all(
+    ValidBlockPromises.map(async (e) => {
+      const BlockRawHex: any = await nodeConnection.getBlockHex(e.block);
+      return { BlockData: BlockRawHex, Block: e.number };
+    })
+  );
+
+  const ValidBlockHexData = BlockHexData.filter((a) => a !== undefined);
+
+  if (ValidBlockHexData.length !== ValidBlockPromises.length)
+    throw new Error("Block Hex Length and Hash length don't match");
+
   /**
    * Now we decodes the block hex and get all the transaction and block
    * header info that we need for inscriptions
    */
 
-  const DecodeBlockData: Block[] = ValidBlockPromises.map((e) => {
-    const BlockDecoder = new BlockHeaderDecoder(e.block);
+  const DecodeBlockData: Block[] = ValidBlockHexData.map((e) => {
+    const BlockDecoder = new BlockHeaderDecoder(e.BlockData);
 
-    const decodedBlock = BlockDecoder.decode(e.number);
+    const decodedBlock = BlockDecoder.decode(e.Block);
 
     return decodedBlock;
   });
