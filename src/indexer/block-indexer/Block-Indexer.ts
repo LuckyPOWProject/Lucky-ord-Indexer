@@ -12,6 +12,8 @@ import BlockHeaderDecoder from "../../utils/blockheader-decoder";
 import IndexBlockTransaction from "./Index-Block-transaction";
 
 const BlockIndexer = async (startBlock: number): Promise<number> => {
+  await nodeConnection.connect();
+
   // Block that we want to index every call
   const MaxScan = SystemConfig.maxscan;
 

@@ -23,8 +23,4 @@ const DogecoinCLI = new DogecoinCore({
   port: SystemConfig.port,
 });
 
-(async () => {
-  await DogecoinCLI.connect();
-})();
-
 export default DogecoinCLI;
