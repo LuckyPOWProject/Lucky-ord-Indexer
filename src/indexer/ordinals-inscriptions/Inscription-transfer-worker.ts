@@ -13,6 +13,7 @@ import Decoder, {
 import { LoctionUpdates } from "../../types/inscription-interface";
 import DogecoinCore from "../../api/dogecoin-core-rpc";
 import SystemConfig from "../../shared/system/config";
+import Logger from "../../shared/system/logger";
 
 const OutpuValueCache: Record<string, number> = {};
 const MAX_ARRAYCACHE = 80_000;
@@ -48,6 +49,8 @@ const inscriptionTransferWork = async (
     const InputTransactionSet: Record<string, TransactionWithBlock> = {};
 
     const invalidInscriptions = new Set<string>();
+
+    const LocationQue = new Set();
 
     for (const transaction of blockData) {
       //We store the coinbase block, because if the inscription is burned then it goes to miner
@@ -126,6 +129,7 @@ const inscriptionTransferWork = async (
 
     //Load the transaction data of matched Inputs
 
+    console.log(InputsHash.length);
     const TransactionOfInputs =
       await QueryInscriptions.LoadTransactionMatchedWithInput(InputsHash);
 
@@ -163,6 +167,9 @@ const inscriptionTransferWork = async (
         let TransactionHandler;
 
         if (!IsValueInCache) {
+          Logger.Success(
+            `Transaction ${key} not found. Getting tx from node...`
+          );
           const TransactionFromNode = await DogecoinCLI.GetTransaction(
             ReverseHash(key)
           );
@@ -177,7 +184,7 @@ const inscriptionTransferWork = async (
           TransactionHandler = IsValueInCache;
         }
 
-        TransactionHandler.outputs.find((e) => {
+        TransactionHandler.outputs.map((e) => {
           const KeyOutputValue = `${key}:${e?.index}`;
           OutpuValueCache[KeyOutputValue] = e?.amount;
         });
@@ -221,6 +228,7 @@ const inscriptionTransferWork = async (
         const InputsTransaction = await FetchMissingInputsValue(NON_EXIST_TX);
 
         InputsTransaction.map((e) => {
+          Logger.Success(`Fetched ${e.hash} transaction from node....`);
           e.output.outputs.map((outs) => {
             const KeyOutputValue = `${e.hash}:${outs.index}`;
             OutpuValueCache[KeyOutputValue] = outs?.amount;
@@ -302,14 +310,16 @@ const inscriptionTransferWork = async (
            * key and add new location cache with new location
            */
 
-          isInscriptionTransfer.filter((a) => a !== inscriptions); //delete the inscr... from that location
+          MatchedLoctionCache[Inputkey] = isInscriptionTransfer.filter(
+            (a) => a !== inscriptions
+          ); //delete the inscr... from that location
 
           /***
            * If there is no inscription left in that particular location key
            * the we need to delete the record
            */
 
-          if (isInscriptionTransfer.length === 0)
+          if (MatchedLoctionCache[Inputkey].length === 0)
             delete MatchedLoctionCache[Inputkey];
 
           /***
@@ -401,17 +411,21 @@ const inscriptionTransferWork = async (
            * with new value
            */
 
-          const isLocationUpdateQue = LoctionUpdateInscriptions.find(
-            (a) => a.inscriptionid === InscriptionId
-          );
+          const IsOnQue = LocationQue.has(InscriptionId);
 
-          /***
-           *
-           * If inscription is on location update que just update the
-           * array fields...
-           */
+          if (IsOnQue) {
+            const isLocationUpdateQue = LoctionUpdateInscriptions.find(
+              (a) => a.inscriptionid === InscriptionId
+            );
 
-          if (isLocationUpdateQue) {
+            if (!isLocationUpdateQue)
+              throw new Error("Inscription not found in que..");
+            /***
+             *
+             * If inscription is on location update que just update the
+             * array fields...
+             */
+
             isLocationUpdateQue.location = newlocation;
             isLocationUpdateQue.offset = offset;
             isLocationUpdateQue.owner = newowner;
@@ -423,6 +437,8 @@ const inscriptionTransferWork = async (
            * If inscription is not on location update que just
            * push new inscription location update que
            */
+
+          LocationQue.add(InscriptionId);
 
           LoctionUpdateInscriptions.push({
             inscriptionid: InscriptionId,
