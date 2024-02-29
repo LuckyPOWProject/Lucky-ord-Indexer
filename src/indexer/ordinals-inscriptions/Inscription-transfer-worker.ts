@@ -139,8 +139,6 @@ const inscriptionTransferWork = async (
     );
 
     TransactionOfInputs.flat(1).map((e) => {
-      console.log(e.txid);
-
       const Key = e.txid;
       InputTransactionSet[Key] = {
         index: e.index,
@@ -213,6 +211,7 @@ const inscriptionTransferWork = async (
             continue;
           }
 
+          console.log(inputTxid);
           NON_EXIST_KEY.push(KeySats);
 
           if (!NON_EXIST_CACHE.has(inputTxid)) {
