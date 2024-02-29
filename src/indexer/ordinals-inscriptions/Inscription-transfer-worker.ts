@@ -134,9 +134,11 @@ const inscriptionTransferWork = async (
 
     Logger.Success(
       `Took ${TimeTook} sec to fetch ${
-        TransactionOfInputs.flat().length
+        TransactionOfInputs.flat(1).length
       } Transactions...`
     );
+
+    console.log(TransactionOfInputs.length);
 
     TransactionOfInputs.flat(1).map((e) => {
       const Key = e.txid;
@@ -228,7 +230,6 @@ const inscriptionTransferWork = async (
         const InputsTransaction = await FetchMissingInputsValue(NON_EXIST_TX);
 
         InputsTransaction.map((e) => {
-          Logger.Success(`Fetched ${e.hash} transaction from node....`);
           e.output.outputs.map((outs) => {
             const KeyOutputValue = `${e.hash}:${outs.index}`;
             OutpuValueCache[KeyOutputValue] = outs?.amount;
