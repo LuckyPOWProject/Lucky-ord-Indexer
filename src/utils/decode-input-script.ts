@@ -30,6 +30,7 @@ const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
   try {
     const inscriptions: inscriptionDataTemp[] = [];
     inputs.map((e, index) => {
+      if (e.index !== 0) return;
       const InputScript = Buffer.from(e.script, "hex");
 
       const ScriptDecode = bitcoin.script.decompile(InputScript);
