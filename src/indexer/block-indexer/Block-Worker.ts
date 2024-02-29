@@ -46,7 +46,7 @@ const BlockWoker = async (indexerStatus: indexingStatus) => {
     const TotalBlockScanned = nextBlock - LastSavedBlock;
 
     Logger.Success(
-      `Successfuly Indexed Block from ${LastSavedBlock} to ${NextBlock}... Scanned ${TotalBlockScanned} Block`
+      `Successfuly Indexed Block from ${LastSavedBlock} to ${nextBlock}... Scanned ${TotalBlockScanned} Block`
     );
 
     LastSavedBlock = nextBlock;

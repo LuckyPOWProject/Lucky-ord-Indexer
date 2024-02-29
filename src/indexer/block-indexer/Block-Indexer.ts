@@ -112,7 +112,7 @@ const BlockIndexer = async (
 
   Querys.push(QueryTransactions.IndexTransactions(BlockTransaction));
 
-  Querys.push(IndexerQuery.UpdateLastInscriptionIndexedBlock(NextBlock));
+  Querys.push(IndexerQuery.UpdateLastTransactionIndexedBlock(NextBlock));
 
   await Promise.all(Querys);
 
