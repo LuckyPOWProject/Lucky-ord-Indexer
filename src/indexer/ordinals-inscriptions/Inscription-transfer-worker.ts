@@ -163,7 +163,7 @@ const inscriptionTransferWork = async (
 
         const Inputkey = `${key}:${input.vin}`;
 
-        const isInscriptionTransfer = MatchedLoctionCache[Inputkey];
+        let isInscriptionTransfer = MatchedLoctionCache[Inputkey];
 
         if (!isInscriptionTransfer) continue; // not a inscription transfer
 
@@ -252,7 +252,7 @@ const inscriptionTransferWork = async (
             if (OutpuValueCache[e]) inputValues.push(OutpuValueCache[e]);
           });
         }
-        
+
         if (inputValues.length !== InscriptionLogicInput.length)
           throw new Error("Input Value length and hash lenght missmatch");
 
@@ -326,15 +326,21 @@ const inscriptionTransferWork = async (
 
           MatchedLoctionCache[Inputkey] = isInscriptionTransfer.filter(
             (a) => a !== inscriptions
-          ); //delete the inscr... from that location
+          );
+
+          isInscriptionTransfer = MatchedLoctionCache[Inputkey];
+
+          //delete the inscr... from that location
 
           /***
            * If there is no inscription left in that particular location key
            * the we need to delete the record
            */
 
-          if (MatchedLoctionCache[Inputkey].length === 0)
+          if (MatchedLoctionCache[Inputkey].length === 0) {
             delete MatchedLoctionCache[Inputkey];
+            isInscriptionTransfer = [];
+          }
 
           /***
            *
