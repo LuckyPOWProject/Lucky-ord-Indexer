@@ -3,9 +3,11 @@ import {
   inscriptionIncomplete,
   inscriptionStoreModel,
 } from "../../types/inscription-interface";
-import { GetInscriptionUpdateQuery } from "../../utils/indexer-utlis";
+import { GetInscriptionUpdateQuery, Sleep } from "../../utils/indexer-utlis";
 import SystemConfig from "../system/config";
+import Logger from "../system/logger";
 import GetMongoConnection from "./connection-provider";
+import IndexerQuery from "./query-indexer";
 
 const inscriptionQuery = {
   storeInscription: async (data: inscriptionStoreModel[]) => {
@@ -84,7 +86,7 @@ const inscriptionQuery = {
     }
   },
 
-  UpdateInscriptionLocation: async (data: LoctionUpdates[]) => {
+  UpdateInscriptionLocation: async (data: LoctionUpdates[]): Promise<any> => {
     try {
       const conn = await GetMongoConnection();
       const db = conn.db(SystemConfig.database);
@@ -94,7 +96,9 @@ const inscriptionQuery = {
 
       await collection.bulkWrite(Query);
     } catch (error) {
-      throw error;
+      Logger.error("Error updating inscription");
+      await Sleep(10 * 60);
+      return await inscriptionQuery.UpdateInscriptionLocation(data);
     }
   },
 };

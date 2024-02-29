@@ -10,7 +10,7 @@ import IndexInscriptions from "./Index-Valid-Inscriptions";
 import inscriptionTransferWork from "./Inscription-transfer-worker";
 import inscriptionFetchandStore from "./inscription-fetcher";
 
-const INSC_RANG = 200; // we will index 1000 blocks transaction from inscription
+const INSC_RANG = 100; // we will index 100 blocks transaction from inscription
 const INSC_BEHIND = 5; // lets add 5 block behinds
 
 const inscriptionIndex = async (indexerStatus: indexingStatus) => {
