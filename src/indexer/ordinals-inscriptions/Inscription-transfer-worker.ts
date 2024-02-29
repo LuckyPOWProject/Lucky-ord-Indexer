@@ -131,9 +131,6 @@ const inscriptionTransferWork = async (
 
     //Load the transaction data of matched Inputs
 
-    console.log(InputsHash.length);
-    console.log(Array.from(new Set(InputsHash)).length);
-
     const TransactionOfInputs =
       await QueryInscriptions.LoadTransactionMatchedWithInput(
         Array.from(new Set(InputsHash))
