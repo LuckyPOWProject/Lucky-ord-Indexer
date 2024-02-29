@@ -218,6 +218,8 @@ const inscriptionTransferWork = async (
               const KeyOutputValue = `${inputTxid}:${e.index}`;
               OutpuValueCache[KeyOutputValue] = e?.amount;
             });
+
+            inputValues.push(OutpuValueCache[KeySats]);
             continue;
           }
 
