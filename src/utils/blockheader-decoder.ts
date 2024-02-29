@@ -30,8 +30,8 @@ class BlockHeaderDecoder {
 
   constructor(hex: string) {
     this.blockHex = hex;
-
     const BlockHexBuffer = Buffer.from(this.blockHex, "hex");
+
     this.blockHexBuffer = BlockHexBuffer;
   }
 
@@ -41,8 +41,7 @@ class BlockHeaderDecoder {
     const BlockHeaderInfo = this.getBlockHeader(this.blockHexBuffer);
 
     Block["blockheader"] = BlockHeaderInfo;
-
-    if (BlockHeaderInfo.noce === 0) {
+    if (BlockHeaderInfo?.version === "04016200") {
       const auxpow = this.decodeauxpow(this.blockHexBuffer);
 
       Block["auxpow"] = auxpow;
@@ -302,7 +301,6 @@ class BlockHeaderDecoder {
       //Scriptlength
 
       const BytesUsed = this.getVintBytes(rawBuffer.slice(InputIndexStart));
-
       const Scriptlength = this.getScriptLength(
         rawBuffer,
         InputIndexStart,
@@ -569,7 +567,6 @@ class BlockHeaderDecoder {
 
   getVintBytes(hex: Buffer): number {
     const value = hex.slice(0, 1).toString("hex").toLocaleUpperCase();
-
     if (value === "FD") {
       return this.byte3;
     } else if (value === "FE") {
