@@ -2,7 +2,7 @@ import { TransactionWithBlock } from "../../types/dogecoin-interface";
 import SystemConfig from "../system/config";
 import GetMongoConnection from "./connection-provider";
 
-const QueryInscriptions = {
+const QueryTransactions = {
   LoadTransactions: async (fromBlock: number, toBlock: number) => {
     try {
       const connection = await GetMongoConnection();
@@ -45,4 +45,4 @@ const QueryInscriptions = {
   },
 };
 
-export default QueryInscriptions;
+export default QueryTransactions;

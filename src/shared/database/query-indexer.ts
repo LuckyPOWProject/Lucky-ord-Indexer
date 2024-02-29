@@ -55,7 +55,7 @@ const IndexerQuery = {
       const collection = db.collection(SystemConfig.collectionIndexer);
       await collection.updateOne(
         { id_index: "index" },
-        { $set: { TotalBlockIndex: count } }
+        { $set: { LatestBlock: count } }
       );
     } catch (error) {
       throw error;

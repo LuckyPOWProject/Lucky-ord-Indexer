@@ -17,6 +17,7 @@ const SystemConfig = {
   collectionIndexer: process.env.collectionIndexer || "",
   maxscan: 12,
   startIndex: process.env.startIndex,
+  blockDiff: 6,
 };
 
 export default SystemConfig;

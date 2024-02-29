@@ -43,3 +43,7 @@ export const GetInscriptionUpdateQuery = (data: LoctionUpdates[]) => {
 
   return Query;
 };
+
+export const Sleep = (ms: number) => {
+  return new Promise((res) => setTimeout(res, ms));
+};
