@@ -237,19 +237,22 @@ const inscriptionTransferWork = async (
          * with the input value
          */
 
-        const InputsTransaction = await FetchMissingInputsValue(NON_EXIST_TX);
+        if (NON_EXIST_TX.length) {
+          const InputsTransaction = await FetchMissingInputsValue(NON_EXIST_TX);
 
-        InputsTransaction.map((e) => {
-          e.output.outputs.map((outs) => {
-            const KeyOutputValue = `${e.hash}:${outs.index}`;
-            OutpuValueCache[KeyOutputValue] = outs?.amount;
+          InputsTransaction.map((e) => {
+            Logger.Success(`${e.hash} Fetched from node...`);
+            e.output.outputs.map((outs) => {
+              const KeyOutputValue = `${e.hash}:${outs.index}`;
+              OutpuValueCache[KeyOutputValue] = outs?.amount;
+            });
           });
-        });
 
-        NON_EXIST_KEY.map((e) => {
-          if (OutpuValueCache[e]) inputValues.push(OutpuValueCache[e]);
-        });
-
+          NON_EXIST_KEY.map((e) => {
+            if (OutpuValueCache[e]) inputValues.push(OutpuValueCache[e]);
+          });
+        }
+        
         if (inputValues.length !== InscriptionLogicInput.length)
           throw new Error("Input Value length and hash lenght missmatch");
 
