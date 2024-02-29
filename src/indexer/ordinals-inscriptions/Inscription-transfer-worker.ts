@@ -44,8 +44,6 @@ const inscriptionTransferWork = async (
 
     const LoctionUpdateInscriptions: LoctionUpdates[] = [];
 
-    const InputsHash: string[] = [];
-
     const InputTransactionSet: Record<string, TransactionWithBlock> = {};
 
     const invalidInscriptions = new Set<string>();
@@ -116,27 +114,31 @@ const inscriptionTransferWork = async (
       }
     });
 
-    for (const transaction of blockData) {
-      if (transaction.coinbase) continue;
-      for (const [i, txinputs] of transaction.inputs.entries()) {
-        const key = `${ReverseHash(txinputs.txid)}:${txinputs.vin}`;
-        const MatchedInscriptionLocations = MatchedLoctionCache[key];
-        if (!MatchedInscriptionLocations) continue;
-        const Inputhash = transaction.inputs
-          .slice(0, i)
-          .map((e) => ReverseHash(e.txid));
-        InputsHash.push(...Inputhash);
-      }
-    }
-
     //Load the transaction data of matched Inputs
 
-    const TransactionOfInputs =
-      await QueryInscriptions.LoadTransactionMatchedWithInput(
-        Array.from(new Set(InputsHash))
-      );
+    const InputHash = Array.from(
+      new Set(InputIds.map((e) => e.map((hash) => hash.split(":")[0])))
+    );
 
-    TransactionOfInputs.map((e) => {
+    const StartTimer = performance.now();
+
+    const TransactionOfInputs = await Promise.all(
+      InputHash.map(async (e) => {
+        return await QueryInscriptions.LoadTransactionMatchedWithInput(e);
+      })
+    );
+
+    const EndTimer = performance.now();
+
+    const TimeTook = (EndTimer - StartTimer) / 1000;
+
+    Logger.Success(
+      `Took ${TimeTook} sec to fetch ${
+        TransactionOfInputs.flat().length
+      } Transactions...`
+    );
+
+    TransactionOfInputs.flat(1).map((e) => {
       const Key = e.txid;
       InputTransactionSet[Key] = {
         index: e.index,
@@ -170,9 +172,6 @@ const inscriptionTransferWork = async (
         let TransactionHandler;
 
         if (!IsValueInCache) {
-          Logger.Success(
-            `Transaction ${key} not found. Getting tx from node...`
-          );
           const TransactionFromNode = await DogecoinCLI.GetTransaction(key);
 
           if (!TransactionFromNode)
