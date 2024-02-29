@@ -1,6 +1,7 @@
 import IndexerQuery from "../shared/database/query-indexer";
 import Logger from "../shared/system/logger";
 import BlockWoker from "./block-indexer/Block-Worker";
+import inscriptionIndex from "./ordinals-inscriptions/Inscription-indexer";
 
 const DoginalsIndexer = async () => {
   //Load the indexer data
@@ -11,7 +12,9 @@ const DoginalsIndexer = async () => {
 
   const IndexBlock = await BlockWoker(IndexerStatus);
 
-  await Promise.all([IndexBlock]);
+  const IndexInscriptions = await inscriptionIndex(IndexerStatus);
+
+  await Promise.all([IndexBlock, IndexInscriptions]);
 };
 
 export default DoginalsIndexer;
