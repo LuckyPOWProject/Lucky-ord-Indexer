@@ -138,9 +138,9 @@ const inscriptionTransferWork = async (
       } Transactions...`
     );
 
-    console.log(TransactionOfInputs.length);
-
     TransactionOfInputs.flat(1).map((e) => {
+      console.log(e.txid);
+
       const Key = e.txid;
       InputTransactionSet[Key] = {
         index: e.index,
