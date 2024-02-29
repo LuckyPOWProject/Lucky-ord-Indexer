@@ -173,9 +173,7 @@ const inscriptionTransferWork = async (
           Logger.Success(
             `Transaction ${key} not found. Getting tx from node...`
           );
-          const TransactionFromNode = await DogecoinCLI.GetTransaction(
-            ReverseHash(key)
-          );
+          const TransactionFromNode = await DogecoinCLI.GetTransaction(key);
 
           if (!TransactionFromNode)
             throw new Error("Faild to get transaction from node...");
