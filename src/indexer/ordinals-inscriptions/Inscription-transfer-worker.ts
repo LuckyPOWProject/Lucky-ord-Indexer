@@ -118,11 +118,13 @@ const inscriptionTransferWork = async (
 
     for (const transaction of blockData) {
       if (transaction.coinbase) continue;
-      for (const txinputs of transaction.inputs) {
+      for (const [i, txinputs] of transaction.inputs.entries()) {
         const key = `${ReverseHash(txinputs.txid)}:${txinputs.vin}`;
         const MatchedInscriptionLocations = MatchedLoctionCache[key];
         if (!MatchedInscriptionLocations) continue;
-        const Inputhash = transaction.inputs.map((e) => ReverseHash(e.txid));
+        const Inputhash = transaction.inputs
+          .slice(0, i)
+          .map((e) => ReverseHash(e.txid));
         InputsHash.push(...Inputhash);
       }
     }
@@ -130,8 +132,12 @@ const inscriptionTransferWork = async (
     //Load the transaction data of matched Inputs
 
     console.log(InputsHash.length);
+    console.log(Array.from(new Set(InputsHash)).length);
+
     const TransactionOfInputs =
-      await QueryInscriptions.LoadTransactionMatchedWithInput(InputsHash);
+      await QueryInscriptions.LoadTransactionMatchedWithInput(
+        Array.from(new Set(InputsHash))
+      );
 
     TransactionOfInputs.map((e) => {
       const Key = e.txid;
