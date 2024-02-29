@@ -20,7 +20,7 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
   let BlockRange = INSC_RANG;
 
   //Now let gets Transaction for blocks
-  let currentInscriptioNumber = 0;
+  let currentInscriptioNumber = indexerStatus.NextInscriptionNumber;
 
   // block till where the transactions are indexed
   let LastTransactionIndexedBlock = indexerStatus.LastTransactionIndexedBlock;
@@ -123,7 +123,11 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
         InscriptionTransfer.invalidInscriptionsIds,
         currentInscriptioNumber
       );
+
+      await IndexerQuery.UpdateNextInscriptionNumber(currentInscriptioNumber);
     }
+
+    //Next Block to index
     const Next = to + 1;
 
     Logger.Success(

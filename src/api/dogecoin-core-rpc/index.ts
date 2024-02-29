@@ -1,4 +1,6 @@
+import Logger from "../../shared/system/logger";
 import { DogecoinCoreRPCAuth } from "../../types/dogecoin-core-rpc.interface";
+import { Sleep } from "../../utils/indexer-utlis";
 const Bitcore = require("bitcoin-core");
 
 class DogecoinCore {
@@ -36,23 +38,50 @@ class DogecoinCore {
   }
 
   async getBlockHash(blocknumber: number): Promise<string> {
-    const LastBlock: string = await this.cli.getBlockHash(blocknumber);
-    return LastBlock;
+    try {
+      const LastBlock: string = await this.cli.getBlockHash(blocknumber);
+      return LastBlock;
+    } catch (error) {
+      Logger.error(`Some error occour, retrying...`);
+      await Sleep(10 * 1000);
+      await this.connect();
+      return this.getBlockHash(blocknumber);
+    }
   }
-
   async getBlockHex(blockhash: string): Promise<string> {
-    const LastBlock: string = await this.cli.getBlock(blockhash, false);
-    return LastBlock;
+    try {
+      const LastBlock: string = await this.cli.getBlock(blockhash, false);
+      return LastBlock;
+    } catch (error) {
+      Logger.error(`Some error occour, retrying...`);
+      await Sleep(10 * 1000);
+      await this.connect();
+      return this.getBlockHex(blockhash);
+    }
   }
 
   async getLastsynedBlock(): Promise<number> {
-    const LastBlock: number = await this.cli.getBlockCount();
-    return LastBlock;
+    try {
+      const LastBlock: number = await this.cli.getBlockCount();
+      return LastBlock;
+    } catch (error) {
+      Logger.error(`Some error occour, retrying...`);
+      await Sleep(10 * 1000);
+      await this.connect();
+      return this.getLastsynedBlock();
+    }
   }
 
-  async GetTransaction(txid: string) {
-    const TransactionData = await this.cli.getRawTransaction(txid, true);
-    return TransactionData;
+  async GetTransaction(txid: string): Promise<any> {
+    try {
+      const TransactionData = await this.cli.getRawTransaction(txid, true);
+      return TransactionData;
+    } catch (error) {
+      Logger.error(`Some error occour, retrying...`);
+      await Sleep(10 * 1000);
+      await this.connect();
+      return this.GetTransaction(txid);
+    }
   }
 
   async getOutPutValue(txid: string) {

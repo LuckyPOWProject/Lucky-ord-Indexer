@@ -28,7 +28,7 @@ const BlockWoker = async (indexerStatus: indexingStatus) => {
 
       if (LatestBlock === NewLatestBlock) continue;
 
-      await IndexerQuery.UpdateTotalBlockIndex(NewLatestBlock);
+      await IndexerQuery.UpdateLastBlock(NewLatestBlock);
 
       Logger.Success(`Found new Block Height ${NewLatestBlock}....`);
 

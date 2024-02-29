@@ -15,7 +15,7 @@ const IndexerQuery = {
         LastInscriptionIndexedBlock: Number(SystemConfig.startIndex),
         LatestBlock: await dogecoinCli.getLastsynedBlock(),
         LastTransactionIndexedBlock: Number(SystemConfig.startIndex),
-        TotalBlockIndex: 0,
+        NextInscriptionNumber: 0,
       };
 
       await collection.insertOne(data);
@@ -42,13 +42,26 @@ const IndexerQuery = {
         LastInscriptionIndexedBlock: data[0].LastInscriptionIndexedBlock,
         LatestBlock: data[0].LatestBlock,
         LastTransactionIndexedBlock: data[0].LastTransactionIndexedBlock,
-        TotalBlockIndex: data[0].TotalBlockIndex,
+        NextInscriptionNumber: data[0].NextInscriptionNumber,
       };
     } catch (error) {
       throw error;
     }
   },
-  UpdateTotalBlockIndex: async (count: number) => {
+  UpdateNextInscriptionNumber: async (NextInscriptionNumber: number) => {
+    try {
+      const conn = await GetMongoConnection();
+      const db = conn.db(SystemConfig.database);
+      const collection = db.collection(SystemConfig.collectionIndexer);
+      await collection.updateOne(
+        { id_index: "index" },
+        { $set: { NextInscriptionNumber: NextInscriptionNumber } }
+      );
+    } catch (error) {
+      throw error;
+    }
+  },
+  UpdateLastBlock: async (count: number) => {
     try {
       const conn = await GetMongoConnection();
       const db = conn.db(SystemConfig.database);

@@ -7,9 +7,6 @@
 import DogecoinCore from "../../api/dogecoin-core-rpc";
 import SystemConfig from "../../shared/system/config";
 
-
-console.log(SystemConfig)
-
 /**
  *
  * user = username (RPC)

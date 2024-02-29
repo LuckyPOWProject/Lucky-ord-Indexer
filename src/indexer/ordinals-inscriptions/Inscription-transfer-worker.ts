@@ -6,6 +6,7 @@ import {
 } from "../../types/dogecoin-interface";
 import { inscriptionStoreModel } from "../../types/inscription-interface";
 import Decoder, {
+  FetchMissingInputsValue,
   OutputScriptToAddress,
   ReverseHash,
 } from "../../utils/indexer-utlis";
@@ -59,6 +60,8 @@ const inscriptionTransferWork = async (
         };
         continue;
       }
+
+      InputTransactionSet[transaction.txid] = transaction;
 
       transaction.inputs.map((e) => {
         const key = `${ReverseHash(e.txid)}:${e.vin}`;
@@ -183,44 +186,53 @@ const inscriptionTransferWork = async (
 
         const inputValues: number[] = [];
 
+        const NON_EXIST_TX = [];
+
+        const NON_EXIST_CACHE = new Set();
+
+        const NON_EXIST_KEY = [];
+
         for (const inscriptionInputs of InscriptionLogicInput) {
           const inputTxid = ReverseHash(inscriptionInputs.txid);
 
           const KeySats = `${inputTxid}:${inscriptionInputs.vin}`;
 
-          let InputSats = OutpuValueCache[KeySats];
+          const InputSats = OutpuValueCache[KeySats];
 
-          if (!InputSats) {
-            // Now lets get Value
-
-            let IsTxinSameSet: any = InputTransactionSet[inputTxid];
-
-            if (!IsTxinSameSet) {
-              const TransactionFromNode = await DogecoinCLI.GetTransaction(
-                inputTxid
-              );
-
-              IsTxinSameSet = Decoder(TransactionFromNode);
-            }
-
-            if (!IsTxinSameSet) {
-              throw new Error("Faild to get input tx data");
-            }
-
-            IsTxinSameSet.outputs.map(
-              (e: { amount: number; index: number }) => {
-                const KeyOutputValue = `${inputTxid}:${e?.index}`;
-                OutpuValueCache[KeyOutputValue] = e?.amount;
-              }
-            );
-
-            InputSats = OutpuValueCache[KeySats];
+          if (InputSats) {
+            inputValues.push(InputSats);
+            continue;
           }
 
-          if (!InputSats) throw new Error("Faild to get input sats");
+          NON_EXIST_KEY.push(KeySats);
 
-          inputValues.push(InputSats);
+          if (!NON_EXIST_CACHE.has(inputTxid)) {
+            NON_EXIST_CACHE.add(inputTxid);
+            NON_EXIST_TX.push(inputTxid);
+          }
         }
+
+        /**
+         *
+         * Now lets fetch the transactions for the NONE found tx and alien them
+         * with the input value
+         */
+
+        const InputsTransaction = await FetchMissingInputsValue(NON_EXIST_TX);
+
+        InputsTransaction.map((e) => {
+          e.output.outputs.map((outs) => {
+            const KeyOutputValue = `${e.hash}:${outs.index}`;
+            OutpuValueCache[KeyOutputValue] = outs?.amount;
+          });
+        });
+
+        NON_EXIST_KEY.map((e) => {
+          if (OutpuValueCache[e]) inputValues.push(OutpuValueCache[e]);
+        });
+
+        if (inputValues.length !== InscriptionLogicInput.length)
+          throw new Error("Input Value length and hash lenght missmatch");
 
         /**
          * Now we need to get all the inscription that matched with the location

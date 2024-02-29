@@ -105,5 +105,5 @@ export interface indexingStatus {
   LatestBlock: number;
   LastInscriptionIndexedBlock: number;
   LastTransactionIndexedBlock: number;
-  TotalBlockIndex: number;
+  NextInscriptionNumber: number;
 }
