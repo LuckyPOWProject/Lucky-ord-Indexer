@@ -211,7 +211,16 @@ const inscriptionTransferWork = async (
             continue;
           }
 
-          console.log(inputTxid);
+          const TXInCache = InputTransactionSet[inputTxid];
+
+          if (TXInCache) {
+            TXInCache.outputs.map((e) => {
+              const KeyOutputValue = `${inputTxid}:${e.index}`;
+              OutpuValueCache[KeyOutputValue] = e?.amount;
+            });
+            continue;
+          }
+
           NON_EXIST_KEY.push(KeySats);
 
           if (!NON_EXIST_CACHE.has(inputTxid)) {
