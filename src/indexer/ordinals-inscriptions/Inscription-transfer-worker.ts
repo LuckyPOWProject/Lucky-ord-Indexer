@@ -14,6 +14,7 @@ import DogecoinCore from "../../api/dogecoin-core-rpc";
 import SystemConfig from "../../shared/system/config";
 
 const OutpuValueCache: Record<string, number> = {};
+const MAX_ARRAYCACHE = 80_000;
 
 const coinbaseTransactions: Record<number, coinbaseTrasactionMeta> = {};
 
@@ -37,7 +38,7 @@ const inscriptionTransferWork = async (
 
     const InscriptionOnBlock = new Set(BlockInscriptions.map((e) => e.id));
 
-    const InputIds: string[] = [];
+    const InputIds: string[][] = [[]];
 
     const LoctionUpdateInscriptions: LoctionUpdates[] = [];
 
@@ -61,24 +62,32 @@ const inscriptionTransferWork = async (
 
       transaction.inputs.map((e) => {
         const key = `${ReverseHash(e.txid)}:${e.vin}`;
-        InputIds.push(key);
+        if (InputIds[InputIds.length - 1].length <= MAX_ARRAYCACHE) {
+          InputIds[InputIds.length - 1].push(key);
+        } else {
+          InputIds.push([key]);
+        }
       });
     }
 
     //Now lets Get the List of Inscription that location = prehash
+    const MatchedInscriptionLocation = await Promise.all(
+      InputIds.map(async (e) => {
+        const Inscriptions =
+          (await inscriptionQuery.LoadMatchLoctionInscriptions(e)) || [];
+        return Inscriptions?.map(
+          (e): { inscription: string; location: string; offset: number } => {
+            return {
+              inscription: e.id,
+              location: e.location,
+              offset: e.offset,
+            };
+          }
+        );
+      })
+    );
 
-    const MatchedInscriptionLocation =
-      (await inscriptionQuery.LoadMatchLoctionInscriptions(InputIds)) || [];
-
-    const Inscription = MatchedInscriptionLocation.map(
-      (e): { inscription: string; location: string; offset: number } => {
-        return {
-          inscription: e.id,
-          location: e.location,
-          offset: e.offset,
-        };
-      }
-    ).concat(
+    const Inscription = MatchedInscriptionLocation.flat(1).concat(
       BlockInscriptions.map(
         (e): { inscription: string; location: string; offset: number } => {
           return {
