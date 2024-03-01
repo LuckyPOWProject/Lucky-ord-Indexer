@@ -18,6 +18,7 @@ export interface inputs {
 export interface inputDecoded {
   inputs: inputs[];
   inputendIndex: number;
+  hasWitness: boolean;
 }
 
 export interface outputs {
