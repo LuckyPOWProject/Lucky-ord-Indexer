@@ -10,11 +10,11 @@ const DoginalsIndexer = async () => {
 
   const IndexerStatus = await IndexerQuery.LoadIndexerStatus();
 
-  const IndexBlock = BlockWoker(IndexerStatus);
+  // const IndexBlock = BlockWoker(IndexerStatus);
 
   const IndexInscriptions = inscriptionIndex(IndexerStatus);
 
-  await Promise.all([IndexBlock, IndexInscriptions]);
+  await Promise.all([IndexInscriptions]);
 };
 
 export default DoginalsIndexer;

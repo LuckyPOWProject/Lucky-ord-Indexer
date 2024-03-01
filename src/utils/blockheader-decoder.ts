@@ -12,6 +12,7 @@ import {
 } from "../types/dogecoin-interface";
 
 import * as bitcoin from "bitcoinjs-lib";
+import { ReverseHash } from "./indexer-utlis";
 
 class BlockHeaderDecoder {
   startIndex = 0;
@@ -19,6 +20,7 @@ class BlockHeaderDecoder {
   blockHexBuffer: Buffer;
 
   byte1 = 1;
+  byte2 = 2;
   byte3 = 3;
   byte4 = 4;
   byte5 = 5;
@@ -41,6 +43,7 @@ class BlockHeaderDecoder {
     const BlockHeaderInfo = this.getBlockHeader(this.blockHexBuffer);
 
     Block["blockheader"] = BlockHeaderInfo;
+
     if (BlockHeaderInfo?.version === "04016200") {
       const auxpow = this.decodeauxpow(this.blockHexBuffer);
 
@@ -134,7 +137,7 @@ class BlockHeaderDecoder {
     //outputs
 
     const OutputStartBuff = InputStartBuff.slice(input.inputendIndex);
-    const output = this.getOutput(OutputStartBuff);
+    const output = this.getOutput(OutputStartBuff, false, input.hasWitness);
 
     const BytesUsed =
       CurrentTransactionIndexBytes +
@@ -172,6 +175,9 @@ class BlockHeaderDecoder {
     const InputStartsBuff = auxpowBuffStart.slice(auxpowindex);
 
     const Inputs = this.getInput(InputStartsBuff);
+    if (!Inputs.inputs.length) {
+      throw new Error("Faild to get AUX POW input");
+    }
 
     const LastInputTrimedIndex = Inputs.inputendIndex;
 
@@ -179,7 +185,7 @@ class BlockHeaderDecoder {
 
     const OutputStartBuff = InputStartsBuff.slice(LastInputTrimedIndex);
 
-    const Outputs = this.getOutput(OutputStartBuff, true);
+    const Outputs = this.getOutput(OutputStartBuff, true, Inputs.hasWitness);
 
     //merklebranch
     const LastOutputTrimedIndex = Outputs.outputendIndex;
@@ -263,8 +269,15 @@ class BlockHeaderDecoder {
 
   getInput(rawBuffer: Buffer): inputDecoded {
     let InputIndexStart = 0;
-
+    let hasWitness = false;
     const Inputs: inputs[] = [];
+    //See if has tx in witness
+
+    const TxWitness = this.sliceBytes(InputIndexStart, this.byte2, rawBuffer);
+    if (TxWitness === "0001") {
+      hasWitness = true;
+      InputIndexStart += this.byte2;
+    }
 
     const BytesUsed = this.getVintBytes(rawBuffer);
 
@@ -301,6 +314,7 @@ class BlockHeaderDecoder {
       //Scriptlength
 
       const BytesUsed = this.getVintBytes(rawBuffer.slice(InputIndexStart));
+
       const Scriptlength = this.getScriptLength(
         rawBuffer,
         InputIndexStart,
@@ -340,10 +354,18 @@ class BlockHeaderDecoder {
         index: i,
       });
     }
-    return { inputendIndex: InputIndexStart, inputs: Inputs };
+    return {
+      inputendIndex: InputIndexStart,
+      inputs: Inputs,
+      hasWitness: hasWitness,
+    };
   }
 
-  getOutput(rawBuffer: Buffer, isauxpow: boolean = false): outputDecoded {
+  getOutput(
+    rawBuffer: Buffer,
+    isauxpow: boolean = false,
+    hasSigWit: boolean = false
+  ): outputDecoded {
     let OutputStartIndex = 0;
 
     const BytesUsed = this.getVintBytes(rawBuffer);
@@ -396,6 +418,41 @@ class BlockHeaderDecoder {
       OutputStartIndex = ScriptEndIndex;
 
       Outputs.push({ index: i, script: Script, amount: Amount });
+    }
+
+    const TxWitness = [];
+
+    if (hasSigWit) {
+      const BytesUsed = this.getVintBytes(rawBuffer.slice(OutputStartIndex));
+
+      const WitnessCount = this.getScriptLength(
+        rawBuffer,
+        OutputStartIndex,
+        BytesUsed
+      );
+
+      OutputStartIndex += BytesUsed;
+
+      for (let i = 0; i < WitnessCount; i++) {
+        const Byteused = this.getVintBytes(rawBuffer.slice(OutputStartIndex));
+        const witnesslength = this.getScriptLength(
+          rawBuffer,
+          OutputStartIndex,
+          Byteused
+        );
+        OutputStartIndex += BytesUsed;
+
+        const endWitness = OutputStartIndex + witnesslength;
+        const witness = this.sliceBytes(
+          OutputStartIndex,
+          endWitness,
+          rawBuffer
+        );
+
+        TxWitness.push(witness);
+
+        OutputStartIndex = endWitness;
+      }
     }
 
     const lastlock = this.sliceBytes(
@@ -567,6 +624,7 @@ class BlockHeaderDecoder {
 
   getVintBytes(hex: Buffer): number {
     const value = hex.slice(0, 1).toString("hex").toLocaleUpperCase();
+
     if (value === "FD") {
       return this.byte3;
     } else if (value === "FE") {

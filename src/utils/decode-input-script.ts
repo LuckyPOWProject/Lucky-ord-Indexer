@@ -31,6 +31,7 @@ const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
     const inscriptions: inscriptionDataTemp[] = [];
     inputs.map((e, index) => {
       if (e.index !== 0) return;
+
       const InputScript = Buffer.from(e.script, "hex");
 
       const ScriptDecode = bitcoin.script.decompile(InputScript);
@@ -124,9 +125,8 @@ const GetInscriptionFromChunk = (
 
     const NewData = data.shift();
     // console.log(NewData);
-
-    if (!NewData || typeof NewData === "number") {
-      throw new Error("Data Not Found or not valid");
+    if (NewData === undefined || typeof NewData === "number") {
+      break;
     }
 
     DoginalData = Buffer.concat([DoginalData, NewData]);
