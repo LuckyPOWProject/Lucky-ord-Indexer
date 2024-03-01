@@ -15,6 +15,7 @@ const SystemConfig = {
   collectionTransaction: process.env.collectionTransaction || "",
   collectionPendingInscription: process.env.collectionPendingInscription || "",
   collectionIndexer: process.env.collectionIndexer || "",
+  collectionBlocks: process.env.collectionBlockNumberToHex || "",
   maxscan: 12,
   startIndex: process.env.startIndex,
   blockDiff: 6,

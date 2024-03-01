@@ -61,6 +61,8 @@ const BlockIndexer = async (
     await BlockIndexer(startBlock);
   }
 
+  await QueryTransactions.InsertBlocks(BlockPromises);
+
   /**If the Block data responseArray and Block scan array don't
    * fulfill then need to refetch the block
    */
