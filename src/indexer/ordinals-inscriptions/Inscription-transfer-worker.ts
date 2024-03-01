@@ -310,7 +310,8 @@ const inscriptionTransferWork = async (
            * in same sats
            */
 
-          const InscriptionOnLocation = locationCache[newlocation];
+          const InscriptionOnLocation =
+            locationCache[`${newlocation}:${offset}`];
 
           if (InscriptionOnLocation) {
             invalidInscriptions.add(InscriptionOnLocation);

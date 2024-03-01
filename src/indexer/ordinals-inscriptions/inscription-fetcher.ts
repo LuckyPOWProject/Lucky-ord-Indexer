@@ -104,7 +104,7 @@ const inscriptionFetchandStore = async (
         }
 
         //we will track every location where the inscription was inscribed
-        LocationTracker[Location] = inscription_id;
+        LocationTracker[`${Location}:${0}`] = inscription_id;
 
         if (!InscriptionComplete) {
           inscriptionInCompleteCache[Location] = {
