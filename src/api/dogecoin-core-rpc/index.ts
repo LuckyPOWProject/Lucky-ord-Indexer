@@ -42,8 +42,10 @@ class DogecoinCore {
       const LastBlock: string = await this.cli.getBlockHash(blocknumber);
       return LastBlock;
     } catch (error) {
-      Logger.error(`Some error occour, retrying...`);
-      await Sleep(10 * 10);
+      Logger.error(
+        `Some error occour, retrying..., BlockHash:- ${blocknumber}`
+      );
+      await Sleep(10 * 1000);
       await this.connect();
       return this.getBlockHash(blocknumber);
     }
@@ -53,8 +55,8 @@ class DogecoinCore {
       const LastBlock: string = await this.cli.getBlock(blockhash, false);
       return LastBlock;
     } catch (error) {
-      Logger.error(`Some error occour, retrying...`);
-      await Sleep(10 * 10);
+      Logger.error(`Some error occour, retrying..., BlockHex:- ${blockhash}`);
+      await Sleep(10 * 1000);
       await this.connect();
       return this.getBlockHex(blockhash);
     }
@@ -66,7 +68,7 @@ class DogecoinCore {
       return LastBlock;
     } catch (error) {
       Logger.error(`Some error occour, retrying...`);
-      await Sleep(10 * 10);
+      await Sleep(10 * 100);
       await this.connect();
       return this.getLastsynedBlock();
     }
@@ -77,8 +79,8 @@ class DogecoinCore {
       const TransactionData = await this.cli.getRawTransaction(txid, true);
       return TransactionData;
     } catch (error) {
-      Logger.error(`Some error occour, retrying...`);
-      await Sleep(10 * 10);
+      Logger.error(`Some error occour, retrying... Tx:- ${txid}`);
+      await Sleep(10 * 100);
       await this.connect();
       return this.GetTransaction(txid);
     }
