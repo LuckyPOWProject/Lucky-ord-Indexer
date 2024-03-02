@@ -12,6 +12,8 @@ const BlockWoker = async (indexerStatus: indexingStatus) => {
 
   let LatestBlock = indexerStatus.LatestBlock;
 
+  let MaxScan = SystemConfig.maxscan;
+
   while (true) {
     /**
      * Check the latest indexing block status
@@ -29,6 +31,8 @@ const BlockWoker = async (indexerStatus: indexingStatus) => {
       if (LatestBlock === NewLatestBlock) continue;
 
       await IndexerQuery.UpdateLastBlock(NewLatestBlock);
+
+      MaxScan = 1;
 
       Logger.Success(`Found new Block Height ${NewLatestBlock}....`);
 

@@ -46,12 +46,6 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
 
       const IndexerStat = await IndexerQuery.LoadIndexerStatus();
 
-      console.log(
-        LastInscriptionIndexedBlock,
-        IndexerStat.LastTransactionIndexedBlock,
-        diffrence
-      );
-
       if (
         LastTransactionIndexedBlock === IndexerStat.LastTransactionIndexedBlock
       )
