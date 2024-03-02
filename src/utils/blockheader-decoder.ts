@@ -308,7 +308,7 @@ class BlockHeaderDecoder {
           true
         ),
         "hex"
-      ).readUInt8();
+      ).readInt32LE();
 
       InputIndexStart += this.byte4;
       //Scriptlength
