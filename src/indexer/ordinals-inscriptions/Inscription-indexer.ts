@@ -10,7 +10,7 @@ import IndexInscriptions from "./Index-Valid-Inscriptions";
 import inscriptionTransferWork from "./Inscription-transfer-worker";
 import inscriptionFetchandStore from "./inscription-fetcher";
 
-const INSC_RANG = 100; // we will index 100 blocks transaction from inscription
+const INSC_RANG = 200; // we will index 100 blocks transaction from inscription
 const INSC_BEHIND = 5; // lets add 5 block behinds
 
 const inscriptionIndex = async (indexerStatus: indexingStatus) => {
@@ -75,6 +75,7 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
 
     const Transactions = await QueryInscriptions.LoadTransactions(from, to);
 
+    Logger.Success(`Loaded Transactions.....`);
     if (Transactions.length === 0) {
       throw new Error("Faild to Load Transaction data");
     }
@@ -103,6 +104,8 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
     const FetchInscriptions = await inscriptionFetchandStore(
       SortedTransactions
     );
+
+    Logger.Success(`Fetched inscriptions.....`);
 
     // Now lets see if there is any inscription transferred in block
 

@@ -14,7 +14,7 @@ const QueryTransactions = {
 
       return data;
     } catch (error) {
-      throw error;
+      throw new Error("Faild to Load Transactions...");
     }
   },
   IndexTransactions: async (data: TransactionWithBlock[]) => {
@@ -44,7 +44,7 @@ const QueryTransactions = {
       const data = await collection.find(Query).toArray();
       return data;
     } catch (error) {
-      throw error;
+      throw new Error("Faild to Load Transactions...");
     }
   },
 

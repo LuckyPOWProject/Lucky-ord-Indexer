@@ -5,35 +5,28 @@ import {
   coinbaseTrasactionMeta,
 } from "../../types/dogecoin-interface";
 import { inscriptionStoreModel } from "../../types/inscription-interface";
-import Decoder, {
+import {
   FetchMissingInputsValue,
   OutputScriptToAddress,
   ReverseHash,
 } from "../../utils/indexer-utlis";
 import { LoctionUpdates } from "../../types/inscription-interface";
-import DogecoinCore from "../../api/dogecoin-core-rpc";
-import SystemConfig from "../../shared/system/config";
 import Logger from "../../shared/system/logger";
+import DogecoinCLI from "../../api/dogecoin-core-rpc/node-connection";
 
-const OutpuValueCache: Record<string, number> = {};
 const MAX_ARRAYCACHE = 80_000;
-
-const coinbaseTransactions: Record<number, coinbaseTrasactionMeta> = {};
 
 const inscriptionTransferWork = async (
   data: inscriptionStoreModel[],
   blockData: TransactionWithBlock[],
   locationCache: Record<string, string>
 ) => {
-  const DogecoinCLI = new DogecoinCore({
-    username: SystemConfig.user,
-    password: SystemConfig.password,
-    host: SystemConfig.host,
-    port: SystemConfig.port,
-  });
-
   await DogecoinCLI.connect();
   try {
+    const OutpuValueCache: Record<string, number> = {};
+
+    const coinbaseTransactions: Record<number, coinbaseTrasactionMeta> = {};
+
     const MatchedLoctionCache: Record<string, string[]> = {};
 
     let BlockInscriptions = data;
@@ -47,9 +40,7 @@ const inscriptionTransferWork = async (
     const invalidInscriptions = new Set<string>();
 
     const LocationQue = new Set();
-
     for (const transaction of blockData) {
-      //We store the coinbase block, because if the inscription is burned then it goes to miner
       if (transaction.coinbase) {
         const location = `${transaction.txid}:${transaction.outputs[0].index}`;
         const address = `Miner`;
