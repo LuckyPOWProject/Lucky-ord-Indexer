@@ -140,8 +140,6 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
     Logger.Success(`Updated indexer states....`);
 
     LastInscriptionIndexedBlock = Next; ///next bock to start index
-
-    await Sleep(100);
   }
 };
 

@@ -155,6 +155,8 @@ const inscriptionTransferWork = async (
      * Now lets begin to track the Doginals Transfers
      *  with logic **/
 
+    Logger.Success("Working in transfer logic....");
+
     for (const DoginalsTransfer of blockData) {
       if (DoginalsTransfer.coinbase) continue;
 
@@ -483,7 +485,7 @@ const inscriptionTransferWork = async (
       invalidInscriptionsIds: invalidInscriptions,
     };
   } catch (error) {
-    throw error;
+    throw new Error("Some error occour");
   }
 };
 
