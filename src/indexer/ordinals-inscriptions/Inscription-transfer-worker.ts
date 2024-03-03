@@ -155,11 +155,8 @@ const inscriptionTransferWork = async (
      * Now lets begin to track the Doginals Transfers
      *  with logic **/
 
-    Logger.Success("Working in transfer logic....");
-
-    for (const DoginalsTransfer of blockData) {
+    for (const [i, DoginalsTransfer] of blockData.entries()) {
       if (DoginalsTransfer.coinbase) continue;
-
       for (const [i, input] of DoginalsTransfer.inputs.entries()) {
         const key = ReverseHash(input.txid);
 
@@ -168,7 +165,6 @@ const inscriptionTransferWork = async (
         let isInscriptionTransfer = MatchedLoctionCache[Inputkey];
 
         if (!isInscriptionTransfer) continue; // not a inscription transfer
-
         const IsValueInCache = InputTransactionSet[key];
 
         let TransactionHandler;
@@ -267,13 +263,17 @@ const inscriptionTransferWork = async (
         const BlockCoinBase =
           coinbaseTransactions[DoginalsTransfer.blockNumber];
 
+        const SumInputValues = inputValues.reduce((a, b) => a + b, 0);
+
         for (const inscriptions of isInscriptionTransfer) {
           const inscriptionData = inscriptions.split(":");
           const InscriptionId = inscriptionData[0];
+
           const offsetnum = Number(inscriptionData[1]);
 
-          const SumInputValues =
-            inputValues.reduce((a, b) => a + b, 0) + offsetnum;
+          const inputSum = SumInputValues + offsetnum;
+
+          const StartTime = performance.now();
 
           let newInscriptionIndex;
           let CurrentOutputSum = 0;
@@ -282,9 +282,9 @@ const inscriptionTransferWork = async (
           for (const [i, Outputs] of DoginalsTransfer.outputs.entries()) {
             const OutputValue = Outputs.amount;
 
-            if (OutputValue + CurrentOutputSum > SumInputValues) {
+            if (OutputValue + CurrentOutputSum > inputSum) {
               newInscriptionIndex = i;
-              offset = SumInputValues - CurrentOutputSum;
+              offset = inputSum - CurrentOutputSum;
               break;
             }
 
@@ -318,32 +318,6 @@ const inscriptionTransferWork = async (
 
           if (InscriptionOnLocation) {
             invalidInscriptions.add(InscriptionOnLocation);
-          }
-
-          /***
-           *
-           * As we get now the new location for inscription, now we can update in
-           * match location cache that there is location for particular inscription,
-           * now we can delete the match location cache of previous match inscription input
-           * key and add new location cache with new location
-           */
-
-          MatchedLoctionCache[Inputkey] = isInscriptionTransfer.filter(
-            (a) => a !== inscriptions
-          );
-
-          isInscriptionTransfer = MatchedLoctionCache[Inputkey];
-
-          //delete the inscr... from that location
-
-          /***
-           * If there is no inscription left in that particular location key
-           * the we need to delete the record
-           */
-
-          if (MatchedLoctionCache[Inputkey].length === 0) {
-            delete MatchedLoctionCache[Inputkey];
-            isInscriptionTransfer = [];
           }
 
           /***
