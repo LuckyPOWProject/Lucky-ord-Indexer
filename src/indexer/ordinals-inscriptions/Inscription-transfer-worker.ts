@@ -174,6 +174,7 @@ const inscriptionTransferWork = async (
         let TransactionHandler;
 
         if (!IsValueInCache) {
+          Logger.Success(`Fetching ${key} tx from node...`);
           const TransactionFromNode = await DogecoinCLI.GetTransaction(key);
 
           if (!TransactionFromNode)
