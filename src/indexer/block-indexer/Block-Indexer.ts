@@ -8,18 +8,18 @@
 import nodeConnection from "../../api/dogecoin-core-rpc/node-connection";
 import IndexerQuery from "../../shared/database/query-indexer";
 import QueryTransactions from "../../shared/database/query-transaction";
-import SystemConfig from "../../shared/system/config";
 import type { Block } from "../../types/dogecoin-interface";
 import BlockHeaderDecoder from "../../utils/blockheader-decoder";
 import IndexBlockTransaction from "./Index-Block-transaction";
 
 const BlockIndexer = async (
-  startBlock: number
+  startBlock: number,
+  maxblock: number
 ): Promise<{ nextBlock: number }> => {
   await nodeConnection.connect();
 
   // Block that we want to index every call
-  const MaxScan = SystemConfig.maxscan;
+  const MaxScan = maxblock;
 
   /**
    * We will keep the list of block in the array that
@@ -58,7 +58,7 @@ const BlockIndexer = async (
   //  If there is not any valid data then refetch the block
 
   if (!ValidBlockPromises.length) {
-    await BlockIndexer(startBlock);
+    await BlockIndexer(startBlock, maxblock);
   }
 
   await QueryTransactions.InsertBlocks(BlockPromises);

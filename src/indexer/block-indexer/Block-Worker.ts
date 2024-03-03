@@ -43,7 +43,7 @@ const BlockWoker = async (indexerStatus: indexingStatus) => {
 
     Logger.Success(`Starting to Index Block from ${LastSavedBlock}....`);
 
-    const NextBlock = await BlockIndexer(LastSavedBlock);
+    const NextBlock = await BlockIndexer(LastSavedBlock, MaxScan);
 
     const { nextBlock } = NextBlock;
 

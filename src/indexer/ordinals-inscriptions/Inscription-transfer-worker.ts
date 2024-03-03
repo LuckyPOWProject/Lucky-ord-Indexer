@@ -322,32 +322,6 @@ const inscriptionTransferWork = async (
 
           /***
            *
-           * As we get now the new location for inscription, now we can update in
-           * match location cache that there is location for particular inscription,
-           * now we can delete the match location cache of previous match inscription input
-           * key and add new location cache with new location
-           */
-
-          MatchedLoctionCache[Inputkey] = isInscriptionTransfer.filter(
-            (a) => a !== inscriptions
-          );
-
-          isInscriptionTransfer = MatchedLoctionCache[Inputkey];
-
-          //delete the inscr... from that location
-
-          /***
-           * If there is no inscription left in that particular location key
-           * the we need to delete the record
-           */
-
-          if (MatchedLoctionCache[Inputkey].length === 0) {
-            delete MatchedLoctionCache[Inputkey];
-            isInscriptionTransfer = [];
-          }
-
-          /***
-           *
            * Now the inscription is moved to new location right, we need add new
            * record in our cache to keep in track of inscription transfer, first
            * check if the new location is recored in cache or not,
@@ -360,7 +334,6 @@ const inscriptionTransferWork = async (
              * If the location is already recorded then just push
              * the inscriptionid and offset
              */
-
             isLocationInCache.push(`${InscriptionId}:${offset}`);
           } else {
             /**
