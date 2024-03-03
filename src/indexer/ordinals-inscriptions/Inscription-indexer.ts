@@ -136,7 +136,6 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
     //updaing indexer status
 
     await IndexerQuery.UpdateLastInscriptionIndexedBlock(Next);
-
     Logger.Success(`Updated indexer states....`);
 
     LastInscriptionIndexedBlock = Next; ///next bock to start index

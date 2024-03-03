@@ -11,7 +11,7 @@ const DoginalsIndexer = async () => {
 
   const IndexInscriptions = inscriptionIndex(IndexerStatus);
 
-  await Promise.all([IndexBlock, IndexInscriptions]);
+  await Promise.all([IndexInscriptions]);
 };
 
 export default DoginalsIndexer;
