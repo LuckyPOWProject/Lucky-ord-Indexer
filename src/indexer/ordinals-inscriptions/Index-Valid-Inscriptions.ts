@@ -1,4 +1,5 @@
 import inscriptionQuery from "../../shared/database/query-inscription";
+import Logger from "../../shared/system/logger";
 import {
   inscriptionIncomplete,
   inscriptionStoreModel,
@@ -8,7 +9,7 @@ const IndexInscriptions = async (
   data: inscriptionStoreModel[],
   pending: inscriptionIncomplete[],
   invalidInscriptions: Set<string>,
-  inscriptionNumberCount: number = 9
+  inscriptionNumberCount: number = 0
 ) => {
   try {
     const SafeInscriptions: inscriptionStoreModel[] = [];
@@ -21,6 +22,9 @@ const IndexInscriptions = async (
       if (!inscriptions.id) continue;
 
       if (invalidInscriptions.has(inscriptions?.id)) {
+        Logger.error(
+          `${inscriptions.id} Inscribed in same sats ${Location}, Ignoring...`
+        );
         continue;
       }
 
@@ -34,23 +38,16 @@ const IndexInscriptions = async (
     }
 
     const SafePending: inscriptionIncomplete[] = [];
-    const LocationsPending = pending.map((e) => e.location);
-
-    const LocationMatchedInscriptionPending =
-      (await inscriptionQuery.LoadMatchLoctionInscriptions(LocationsPending)) ||
-      [];
-
-    const MatchedLocationHashPending = new Set(
-      LocationMatchedInscriptionPending.map((e) => e.location)
-    );
 
     for (const pendingInscription of pending) {
       const Location = pendingInscription.location;
 
-      if (MatchedLocationHashPending.has(Location)) continue;
-      // in same sats you can't inscribe
-
-      if (invalidInscriptions.has(pendingInscription.id)) continue;
+      if (invalidInscriptions.has(pendingInscription.id)) {
+        Logger.error(
+          `${pendingInscription.id} Inscribed in same sats ${Location}, Ignoring...`
+        );
+        continue;
+      }
 
       SafePending.push({ ...pendingInscription });
     }
