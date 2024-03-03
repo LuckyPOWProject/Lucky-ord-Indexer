@@ -44,8 +44,6 @@ const inscriptionTransferWork = async (
 
     const LoctionUpdateInscriptions: LoctionUpdates[] = [];
 
-    const InputTransactionSet: Record<string, TransactionWithBlock> = {};
-
     const invalidInscriptions = new Set<string>();
 
     const LocationQue = new Set();
@@ -62,7 +60,10 @@ const inscriptionTransferWork = async (
         continue;
       }
 
-      InputTransactionSet[transaction.txid] = transaction;
+      transaction.outputs.map((e) => {
+        const key = `${transaction.txid}:${e.index}`;
+        OutpuValueCache[key] = e.amount;
+      });
 
       transaction.inputs.map((e) => {
         const key = `${ReverseHash(e.txid)}:${e.vin}`;
@@ -140,53 +141,32 @@ const inscriptionTransferWork = async (
 
     TransactionOfInputs.flat(1).map((e) => {
       const Key = e.txid;
-      InputTransactionSet[Key] = {
-        index: e.index,
-        inputs: e.inputs,
-        outputs: e.outputs,
-        time: e.time,
-        txid: e.txid,
-        coinbase: e.coinbase,
-        blockNumber: e.blockNumber,
-      };
+      e.outputs.map((a: { amount: number; index: number }) => {
+        OutpuValueCache[`${Key}:${a.index}`] = a.amount;
+      });
     });
 
     /**Now we get all important data that is required,
      * Now lets begin to track the Doginals Transfers
      *  with logic **/
 
+    //lets track the time
+
+    const StartTimerLogic = performance.now();
+
+    Logger.Success(`Working in transfer logic...`);
+
     for (const [i, DoginalsTransfer] of blockData.entries()) {
       if (DoginalsTransfer.coinbase) continue;
+
       for (const [i, input] of DoginalsTransfer.inputs.entries()) {
         const key = ReverseHash(input.txid);
 
         const Inputkey = `${key}:${input.vin}`;
 
-        let isInscriptionTransfer = MatchedLoctionCache[Inputkey];
+        const isInscriptionTransfer = MatchedLoctionCache[Inputkey];
 
         if (!isInscriptionTransfer) continue; // not a inscription transfer
-        const IsValueInCache = InputTransactionSet[key];
-
-        let TransactionHandler;
-
-        if (!IsValueInCache) {
-          Logger.Success(`Fetching ${key} tx from node...`);
-          const TransactionFromNode = await DogecoinCLI.GetTransaction(key);
-
-          if (!TransactionFromNode)
-            throw new Error("Faild to get transaction from node...");
-
-          const DecodeValues = Decoder(TransactionFromNode);
-
-          TransactionHandler = DecodeValues;
-        } else {
-          TransactionHandler = IsValueInCache;
-        }
-
-        TransactionHandler.outputs.map((e) => {
-          const KeyOutputValue = `${key}:${e?.index}`;
-          OutpuValueCache[KeyOutputValue] = e?.amount;
-        });
 
         const InscriptionLogicInput = DoginalsTransfer.inputs.slice(0, i);
 
@@ -207,18 +187,7 @@ const inscriptionTransferWork = async (
 
           if (InputSats) {
             inputValues.push(InputSats);
-            continue;
-          }
 
-          const TXInCache = InputTransactionSet[inputTxid];
-
-          if (TXInCache) {
-            TXInCache.outputs.map((e) => {
-              const KeyOutputValue = `${inputTxid}:${e.index}`;
-              OutpuValueCache[KeyOutputValue] = e?.amount;
-            });
-
-            inputValues.push(OutpuValueCache[KeySats]);
             continue;
           }
 
@@ -272,8 +241,6 @@ const inscriptionTransferWork = async (
           const offsetnum = Number(inscriptionData[1]);
 
           const inputSum = SumInputValues + offsetnum;
-
-          const StartTime = performance.now();
 
           let newInscriptionIndex;
           let CurrentOutputSum = 0;
@@ -342,19 +309,6 @@ const inscriptionTransferWork = async (
              * the new data in cache
              */
             MatchedLoctionCache[newlocation] = [`${InscriptionId}:${offset}`];
-          }
-
-          /*****
-           *
-           * Now we can store the currect transaction to get input values in
-           * futer transaction featching, so we don't need to get it from node
-           */
-
-          const isTransactionInCache =
-            InputTransactionSet[DoginalsTransfer.txid];
-
-          if (!isTransactionInCache) {
-            InputTransactionSet[DoginalsTransfer.txid] = DoginalsTransfer;
           }
 
           /****
@@ -446,8 +400,16 @@ const inscriptionTransferWork = async (
             owner: newowner,
           });
         }
+
+        delete MatchedLoctionCache[Inputkey];
       }
     }
+
+    const EndTimerLogic = performance.now();
+
+    const TimerTook = (EndTimerLogic - StartTimerLogic) / 1000;
+
+    Logger.Success(`Took ${TimerTook} to complete transfer logic...`);
 
     if (LoctionUpdateInscriptions.length) {
       await inscriptionQuery.UpdateInscriptionLocation(
