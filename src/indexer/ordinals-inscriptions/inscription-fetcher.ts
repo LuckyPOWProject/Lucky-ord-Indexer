@@ -160,7 +160,7 @@ const inscriptionFetchandStore = async (
       inscriptions: inscriptionData,
     };
   } catch (error) {
-    throw new Error("Faild to Fetch Inscriptions...");
+    throw error;
   }
 };
 
