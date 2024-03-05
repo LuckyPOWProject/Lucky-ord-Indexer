@@ -100,11 +100,43 @@ export const GetTransactionFee = async (
   try {
     const inputsValues: number[] = [];
 
+    const NON_EXIST_TX: string[] = []; //the controller
+    const NON_EXIST_KEY: string[] = [];
+    const NON_EXIST_CACHE = new Set(); //add to cache
+
     for (const input of transaction.inputs) {
-      const key = `${ReverseHash(input.txid)}:${input.vin}`;
+      const hash = ReverseHash(input.txid);
+      const key = `${hash}:${input.vin}`;
       const Value = inputsValue[key];
-      if (!Value) throw new Error("Value is not found in Cache");
+
+      if (!Value) {
+        const IsHashAlreadyInList = NON_EXIST_CACHE.has(hash);
+        NON_EXIST_KEY.push(key);
+        if (IsHashAlreadyInList) continue;
+
+        NON_EXIST_TX.push(hash);
+        NON_EXIST_CACHE.add(hash);
+        continue;
+      }
       inputsValues.push(Value);
+    }
+
+    if (NON_EXIST_TX.length) {
+      const InputsTransaction = await FetchMissingInputsValue(NON_EXIST_TX);
+
+      //store the values to the cache
+      InputsTransaction.map((e) => {
+        e.output.outputs.map((outs) => {
+          const KeyOutputValue = `${e.hash}:${outs.index}`;
+          inputsValue[KeyOutputValue] = outs?.amount;
+        });
+      });
+
+      //now set the value
+      NON_EXIST_KEY.map((e) => {
+        if (inputsValue[e]) inputsValues.push(inputsValue[e]);
+        else throw new Error("Input value not found");
+      });
     }
 
     if (inputsValues.length !== transaction.inputs.length)
@@ -115,7 +147,7 @@ export const GetTransactionFee = async (
     const OuputSum = transaction.outputs.reduce((a, b) => a + b.amount, 0);
 
     const Fee = InputSum - OuputSum;
-    return Fee;
+    return { Fee: Fee, inputsValue: inputsValue };
   } catch (error) {
     throw error;
   }
@@ -124,23 +156,22 @@ export const GetTransactionFee = async (
 export const GetTransactionFeeSum = async (
   inputsValue: Record<string, number>,
   transaction: TransactionWithBlock[],
-  startIndex: number,
-  endIndex: number,
-  currentFee: number
+  endIndex: number
 ) => {
   try {
-    let CurrentFeeSum = currentFee;
+    let CurrentFeeSum = 0;
 
-    for (let i = startIndex; i < endIndex; i++) {
+    for (let i = 1; i < endIndex; i++) {
       const Transactions = transaction[i];
 
       if (Transactions.coinbase) continue;
 
       const Fee = await GetTransactionFee(inputsValue, Transactions);
 
-      CurrentFeeSum += Fee;
+      CurrentFeeSum += Fee.Fee;
+      inputsValue = Fee.inputsValue;
     }
-    return CurrentFeeSum;
+    return { CurrentFeeSum: CurrentFeeSum, inputsValue };
   } catch (error) {
     throw error;
   }

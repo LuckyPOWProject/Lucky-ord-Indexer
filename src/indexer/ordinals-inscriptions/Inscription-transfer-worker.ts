@@ -1,7 +1,6 @@
 import inscriptionQuery from "../../shared/database/query-inscription";
 import QueryInscriptions from "../../shared/database/query-transaction";
 import {
-  BlockFeeSum,
   TransactionWithBlock,
   coinbaseTrasactionMeta,
 } from "../../types/dogecoin-interface";
@@ -25,7 +24,7 @@ const inscriptionTransferWork = async (
 ) => {
   await DogecoinCLI.connect();
   try {
-    const OutpuValueCache: Record<string, number> = {};
+    let OutpuValueCache: Record<string, number> = {};
 
     const coinbaseTransactions: Record<number, coinbaseTrasactionMeta> = {};
 
@@ -139,36 +138,6 @@ const inscriptionTransferWork = async (
       });
     });
 
-    const NON_EXIST_TX: string[] = []; //the controller
-
-    const NON_EXIST_CACHE = new Set(); //add to cache
-
-    const InputIdsList = InputIds.flat(1);
-    for (const inputs of InputIdsList) {
-      const txid = inputs.split(":")[0];
-
-      const HasValueForInput = OutpuValueCache[inputs];
-
-      if (HasValueForInput) continue;
-
-      if (!NON_EXIST_CACHE.has(txid)) {
-        NON_EXIST_CACHE.add(txid); //add to cache
-        NON_EXIST_TX.push(txid); //add to que
-      }
-    }
-
-    NON_EXIST_CACHE.clear(); //flush it
-
-    if (NON_EXIST_TX.length) {
-      const InputsTransaction = await FetchMissingInputsValue(NON_EXIST_TX);
-      InputsTransaction.map((e) => {
-        e.output.outputs.map((outs) => {
-          const KeyOutputValue = `${e.hash}:${outs.index}`;
-          OutpuValueCache[KeyOutputValue] = outs?.amount;
-        });
-      });
-    }
-
     /**Now we get all important data that is required,
      * Now lets begin to track the Doginals Transfers
      *  with logic **/
@@ -195,6 +164,12 @@ const inscriptionTransferWork = async (
 
         const inputValues: number[] = [];
 
+        const NON_EXIST_KEY: string[] = [];
+
+        const NON_EXIST_TX: string[] = []; //the controller
+
+        const NON_EXIST_CACHE = new Set(); //add to cache
+
         for (const inscriptionInputs of InscriptionLogicInput) {
           const inputTxid = ReverseHash(inscriptionInputs.txid);
 
@@ -202,7 +177,15 @@ const inscriptionTransferWork = async (
 
           const InputSats = OutpuValueCache[KeySats];
 
-          if (!InputSats) throw new Error("Input value not found");
+          if (!InputSats) {
+            NON_EXIST_KEY.push(KeySats);
+            const IsInputOnList = NON_EXIST_CACHE.has(inputTxid);
+
+            if (IsInputOnList) continue;
+            NON_EXIST_TX.push(inputTxid);
+            NON_EXIST_CACHE.add(inputTxid);
+            continue;
+          }
 
           inputValues.push(InputSats);
           continue;
@@ -213,6 +196,24 @@ const inscriptionTransferWork = async (
          * Now lets fetch the transactions for the NONE found tx and alien them
          * with the input value
          */
+
+        if (NON_EXIST_TX.length) {
+          const InputsTransaction = await FetchMissingInputsValue(NON_EXIST_TX);
+
+          //store the values to the cache
+          InputsTransaction.map((e) => {
+            e.output.outputs.map((outs) => {
+              const KeyOutputValue = `${e.hash}:${outs.index}`;
+              OutpuValueCache[KeyOutputValue] = outs?.amount;
+            });
+          });
+
+          //now set the value
+          NON_EXIST_KEY.map((e) => {
+            if (OutpuValueCache[e]) inputValues.push(OutpuValueCache[e]);
+            else throw new Error("Input value not found");
+          });
+        }
 
         if (inputValues.length !== InscriptionLogicInput.length)
           throw new Error("Input Value length and hash lenght missmatch");
@@ -276,12 +277,16 @@ const inscriptionTransferWork = async (
               blockData
                 .filter((a) => a.blockNumber === DoginalsTransfer.blockNumber)
                 .sort((a, b) => a.index - b.index),
-              0,
-              DoginalsTransfer.index,
-              0
+              DoginalsTransfer.index
             );
 
-            offset = inputSum - CurrentOutputSum + BLOCK_REWARD + GetFeeSum;
+            offset =
+              inputSum -
+              CurrentOutputSum +
+              BLOCK_REWARD +
+              GetFeeSum.CurrentFeeSum;
+
+            OutpuValueCache = GetFeeSum.inputsValue;
           }
 
           /**
