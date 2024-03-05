@@ -108,3 +108,8 @@ export interface indexingStatus {
   LastTransactionIndexedBlock: number;
   NextInscriptionNumber: number;
 }
+
+export interface BlockFeeSum {
+  endIndex: number;
+  currenSum: number;
+}
