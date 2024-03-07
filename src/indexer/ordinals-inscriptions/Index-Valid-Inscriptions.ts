@@ -1,5 +1,4 @@
 import inscriptionQuery from "../../shared/database/query-inscription";
-import Logger from "../../shared/system/logger";
 import {
   inscriptionIncomplete,
   inscriptionStoreModel,
@@ -22,9 +21,6 @@ const IndexInscriptions = async (
       if (!inscriptions.id) continue;
 
       if (invalidInscriptions.has(inscriptions?.id)) {
-        Logger.error(
-          `${inscriptions.id} Inscribed in same sats ${Location}, Ignoring...`
-        );
         continue;
       }
 
@@ -40,12 +36,7 @@ const IndexInscriptions = async (
     const SafePending: inscriptionIncomplete[] = [];
 
     for (const pendingInscription of pending) {
-      const Location = pendingInscription.location;
-
       if (invalidInscriptions.has(pendingInscription.id)) {
-        Logger.error(
-          `${pendingInscription.id} Inscribed in same sats ${Location}, Ignoring...`
-        );
         continue;
       }
 

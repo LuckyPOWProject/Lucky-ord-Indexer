@@ -16,7 +16,7 @@ export const OutputScriptToAddress = (script: string) => {
     );
     return outputScriptDecoded;
   } catch (error) {
-    throw error;
+    return script;
   }
 };
 export default function Decoder(txData: any): outputDecode {
@@ -134,8 +134,8 @@ export const GetTransactionFee = async (
 
       //now set the value
       NON_EXIST_KEY.map((e) => {
-        if (inputsValue[e]) inputsValues.push(inputsValue[e]);
-        else throw new Error("Input value not found");
+        if (inputsValue[e] !== undefined) inputsValues.push(inputsValue[e]);
+        else throw new Error(`Input value not found, ${e}`);
       });
     }
 
@@ -155,14 +155,20 @@ export const GetTransactionFee = async (
 
 export const GetTransactionFeeSum = async (
   inputsValue: Record<string, number>,
-  transaction: TransactionWithBlock[],
-  endIndex: number
+  transaction: Map<number, TransactionWithBlock[]>,
+  endIndex: number,
+  blockNumber: number
 ) => {
   try {
     let CurrentFeeSum = 0;
 
-    for (let i = 1; i < endIndex; i++) {
-      const Transactions = transaction[i];
+    const SortedTransactions = transaction.get(blockNumber);
+    if (!SortedTransactions) throw new Error("Faild to arrage transaction");
+
+    const ST = SortedTransactions.sort((a, b) => a.index - b.index);
+
+    for (let i = 0; i < endIndex; i++) {
+      const Transactions = ST[i];
 
       if (Transactions.coinbase) continue;
 

@@ -41,6 +41,9 @@ const inscriptionTransferWork = async (
     const invalidInscriptions = new Set<string>();
 
     const LocationQue = new Set();
+
+    const TransactionMap = new Map<number, TransactionWithBlock[]>();
+
     for (const transaction of blockData) {
       if (transaction.coinbase) {
         const location = `${transaction.txid}:${transaction.outputs[0].index}`;
@@ -51,6 +54,14 @@ const inscriptionTransferWork = async (
         };
         continue;
       }
+
+      const blockNumber = transaction.blockNumber;
+      if (!TransactionMap.has(blockNumber)) {
+        TransactionMap.set(blockNumber, []);
+      }
+      const BlockHouse = TransactionMap.get(blockNumber);
+      if (!BlockHouse) throw new Error("Block has not been init");
+      BlockHouse.push(transaction);
 
       transaction.outputs.map((e) => {
         const key = `${transaction.txid}:${e.index}`;
@@ -274,10 +285,9 @@ const inscriptionTransferWork = async (
             /** Lets get the last fee sum */
             const GetFeeSum = await GetTransactionFeeSum(
               OutpuValueCache,
-              blockData
-                .filter((a) => a.blockNumber === DoginalsTransfer.blockNumber)
-                .sort((a, b) => a.index - b.index),
-              DoginalsTransfer.index
+              TransactionMap,
+              DoginalsTransfer.index,
+              DoginalsTransfer.blockNumber
             );
 
             offset =
