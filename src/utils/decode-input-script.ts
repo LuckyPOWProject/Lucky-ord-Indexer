@@ -12,7 +12,9 @@ const op_code_to_num = (opcode: number | Buffer): number | undefined => {
 
     if (code.length === 1) return opcode[0];
 
-    if (code.length === 2) return opcode[0] * 255 + opcode[1];
+    if (code.length === 2) {
+      return opcode[0] * 255 + opcode[1];
+    }
 
     return undefined;
   }

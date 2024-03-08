@@ -30,15 +30,15 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
 
   //Now lets get the block diffrence
 
-  let diffrence = LastTransactionIndexedBlock - LastInscriptionIndexedBlock;
-
   //Now lets gets all the transaction data for those block
 
   Logger.Success(
-    `Loading indexer status, Last Transaction Block:- ${LastTransactionIndexedBlock}, Last Inscription Block ${LastInscriptionIndexedBlock}::: Difference:- ${diffrence}`
+    `Loading indexer status, Last Transaction Block:- ${LastTransactionIndexedBlock}, Last Inscription Block ${LastInscriptionIndexedBlock}`
   );
 
   while (true) {
+    let diffrence = LastTransactionIndexedBlock - LastInscriptionIndexedBlock;
+
     if (diffrence <= INSC_BEHIND) {
       Logger.Success("Waiting 15sec before fetching new block...");
 
