@@ -80,6 +80,7 @@ class DogecoinCore {
       return TransactionData;
     } catch (error) {
       Logger.error(`Some error occour, retrying... Tx:- ${txid}`);
+      await Sleep(10 * 100);
       await this.connect();
       return this.GetTransaction(txid);
     }
