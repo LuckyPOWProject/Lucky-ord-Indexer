@@ -70,7 +70,7 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
     }
 
     Logger.Success(
-      `Starting to fetch and index inscription from Block ${from} to ${to}...`
+      `Starting to fetch and index inscription from Block ${from} to ${to}... [Block Behind: ${diffrence}]`
     );
 
     const Transactions = await QueryInscriptions.LoadTransactions(from, to);
@@ -137,7 +137,6 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
     );
 
     //updaing indexer status
-
     await IndexerQuery.UpdateLastInscriptionIndexedBlock(Next);
     Logger.Success(`Updated indexer states....`);
 
