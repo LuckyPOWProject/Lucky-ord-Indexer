@@ -8,11 +8,9 @@ const op_code_to_num = (opcode: number | Buffer): number | undefined => {
   if (typeof opcode !== "number") {
     if (opcode.length > 2) return undefined;
 
-    const code = opcode.reverse();
+    if (opcode.length === 1) return opcode[1];
 
-    if (code.length === 1) return opcode[0];
-
-    if (code.length === 2) return opcode[0] * 256 + opcode[1];
+    if (opcode.length === 2) return opcode[1] * 256 + opcode[0];
 
     return undefined;
   }
@@ -111,7 +109,7 @@ const GetInscriptionFromChunk = (
 
   let isComplete = true;
 
-  while (remainingChunks) {
+  while (remainingChunks && data.length) {
     const Data = data.shift();
     if (Data === undefined) break;
 
@@ -132,6 +130,7 @@ const GetInscriptionFromChunk = (
 
     remainingChunks -= 1;
   }
+
   return { doginalData: DoginalData, isComplete };
 };
 
