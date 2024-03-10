@@ -7,11 +7,11 @@ const DoginalsIndexer = async () => {
   Logger.Success(`Starting doginals indexer....`);
   const IndexerStatus = await IndexerQuery.LoadIndexerStatus();
 
-  // const IndexBlock = BlockWoker(IndexerStatus);
+  const IndexBlock = BlockWoker(IndexerStatus);
 
   const IndexInscriptions = inscriptionIndex(IndexerStatus);
 
-  await Promise.all([IndexInscriptions]);
+  await Promise.all([IndexInscriptions,IndexBlock]);
 };
 
 export default DoginalsIndexer;
