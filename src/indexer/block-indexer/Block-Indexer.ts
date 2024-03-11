@@ -8,6 +8,7 @@
 import nodeConnection from "../../api/dogecoin-core-rpc/node-connection";
 import IndexerQuery from "../../shared/database/query-indexer";
 import QueryTransactions from "../../shared/database/query-transaction";
+import Logger from "../../shared/system/logger";
 import type { Block } from "../../types/dogecoin-interface";
 import BlockHeaderDecoder from "../../utils/blockheader-decoder";
 import IndexBlockTransaction from "./Index-Block-transaction";
@@ -110,13 +111,11 @@ const BlockIndexer = async (
 
   const NextBlock = BlocksToScan[BlocksToScan.length - 1] + 1;
 
-  const Querys = [];
+  Logger.Success("Indexing Blocks Transactions.... ");
+  await QueryTransactions.IndexTransactions(BlockTransaction);
+  Logger.Success("Indexed Blocks Transactions.... ");
 
-  Querys.push(QueryTransactions.IndexTransactions(BlockTransaction));
-
-  Querys.push(IndexerQuery.UpdateLastTransactionIndexedBlock(NextBlock));
-
-  await Promise.all(Querys);
+  await IndexerQuery.UpdateLastTransactionIndexedBlock(NextBlock);
 
   // Now return the new block to start indexing from
 

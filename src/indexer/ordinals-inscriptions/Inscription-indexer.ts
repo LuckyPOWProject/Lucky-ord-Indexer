@@ -42,7 +42,7 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
     if (diffrence <= INSC_BEHIND) {
       Logger.Success("Waiting 15sec before fetching new block...");
 
-      await Sleep(35 * 1000);
+      await Sleep(15 * 1000);
 
       const IndexerStat = await IndexerQuery.LoadIndexerStatus();
 
