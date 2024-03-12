@@ -1,5 +1,9 @@
 import DoginalsIndexer from "./indexer/main";
 
-(async () => {
+import App from "./server";
+
+App;
+
+(() => {
   DoginalsIndexer();
 })();

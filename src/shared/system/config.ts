@@ -8,7 +8,6 @@ const SystemConfig = {
   port: Number(process.env.port) || 22555,
   password: process.env.password || "",
   user: process.env.rpcuser || "",
-
   mongAuth: process.env.url || "",
   database: process.env.database || "",
   collectionInscription: process.env.collectionInscription || "",
@@ -19,6 +18,8 @@ const SystemConfig = {
   maxscan: 12,
   startIndex: process.env.startIndex,
   blockDiff: 6,
+  //server config
+  httpPort: process.env.httpPort,
 };
 
 export default SystemConfig;
