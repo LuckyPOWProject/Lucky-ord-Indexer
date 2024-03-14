@@ -43,7 +43,7 @@ const getInscriptionUTXOs = async (req: Request, res: Response) => {
       const index = outputs.index;
 
       if (index === Number(Index)) {
-        UTXOS.push({ ...outputs, txid: txid });
+        UTXOS.push({ ...outputs, txid: txid, vout: outputs.index });
         break;
       }
     }

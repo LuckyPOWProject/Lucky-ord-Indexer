@@ -19,7 +19,7 @@ const SystemConfig = {
   startIndex: process.env.startIndex,
   blockDiff: 6,
   //server config
-  httpPort: process.env.httpPort,
+  httpPort: process.env.httpPortServer,
 };
 
 export default SystemConfig;
