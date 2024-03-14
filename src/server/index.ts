@@ -4,6 +4,7 @@ import Logger from "../shared/system/logger";
 import cors from "cors";
 import InscriptionRoute from "./route/inscription-route";
 import morgan from "morgan";
+import UTXORoute from "./route/utxos";
 
 const App = express();
 
@@ -14,9 +15,10 @@ App.use(
   )
 );
 App.use(InscriptionRoute);
+App.use(UTXORoute);
 
-App.listen(SystemConfig.port, () =>
-  Logger.Success(`App is running in Port ${SystemConfig.port}`)
+App.listen(SystemConfig.httpPort, () =>
+  Logger.Success(`App is running in Port ${SystemConfig.httpPort}`)
 );
 
 export default App;

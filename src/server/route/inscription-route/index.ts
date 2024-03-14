@@ -1,7 +1,7 @@
 import express from "express";
 import { GetInscription } from "./get-inscription";
 import getAddressInscriptions from "./get-address-inscriptions";
-import getInscriptionContent from "../get-inscription-content";
+import getInscriptionContent from "./get-inscription-content";
 
 const InscriptionRoute = express.Router();
 

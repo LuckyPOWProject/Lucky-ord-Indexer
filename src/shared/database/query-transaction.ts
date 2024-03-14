@@ -32,7 +32,20 @@ const QueryTransactions = {
       throw new Error("Some error occoured");
     }
   },
+  LoadSingleTransaction: async (txid: string) => {
+    try {
+      const connection = await GetMongoConnection();
+      const db = connection.db(SystemConfig.database);
+      const collection = db.collection(SystemConfig.collectionTransaction);
 
+      const Query = { txid: txid };
+
+      const data = await collection.findOne(Query);
+      return data ? data : false;
+    } catch (error) {
+      return false;
+    }
+  },
   LoadTransactionMatchedWithInput: async (hash: string[]) => {
     try {
       const connection = await GetMongoConnection();

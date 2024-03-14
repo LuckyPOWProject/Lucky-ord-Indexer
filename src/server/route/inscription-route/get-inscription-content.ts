@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { getInscriptionParms } from "../controller/server-helper";
-import InscriptionhttpQuery from "../../shared/database/query-http-inscriptions";
-import { ErrorResponse } from "../controller/server-response-handler";
+import { getInscriptionParms } from "../../controller/server-helper";
+import InscriptionhttpQuery from "../../../shared/database/query-http-inscriptions";
+import { ErrorResponse } from "../../controller/server-response-handler";
 import memetype from "mime-types";
 const getInscriptionContent = async (req: Request, res: Response) => {
   try {
