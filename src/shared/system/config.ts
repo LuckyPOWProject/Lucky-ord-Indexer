@@ -15,9 +15,9 @@ const SystemConfig = {
   collectionPendingInscription: process.env.collectionPendingInscription || "",
   collectionIndexer: process.env.collectionIndexer || "",
   collectionBlocks: process.env.collectionBlockNumberToHex || "",
-  maxscan: 12,
+  maxscan: 2,
   startIndex: process.env.startIndex,
-  blockDiff: 3,
+  blockDiff: 4,
   //server config
   httpPort: process.env.httpPortServer,
 };
