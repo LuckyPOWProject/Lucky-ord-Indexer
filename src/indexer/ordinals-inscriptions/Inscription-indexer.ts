@@ -11,7 +11,7 @@ import inscriptionTransferWork from "./Inscription-transfer-worker";
 import inscriptionFetchandStore from "./inscription-fetcher";
 
 const INSC_RANG = 200; // we will index 100 blocks transaction from inscription
-const INSC_BEHIND = 3; // lets add 5 block behinds
+const INSC_BEHIND = 1; // lets add 5 block behinds
 
 const inscriptionIndex = async (indexerStatus: indexingStatus) => {
   Logger.Success("Starting to index inscription....");

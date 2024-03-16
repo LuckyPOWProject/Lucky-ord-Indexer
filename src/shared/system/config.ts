@@ -17,7 +17,7 @@ const SystemConfig = {
   collectionBlocks: process.env.collectionBlockNumberToHex || "",
   maxscan: 12,
   startIndex: process.env.startIndex,
-  blockDiff: 6,
+  blockDiff: 3,
   //server config
   httpPort: process.env.httpPortServer,
 };
