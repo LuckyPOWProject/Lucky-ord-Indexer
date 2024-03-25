@@ -14,6 +14,7 @@ export const getInscriptionDataDecoded = (
       block,
       time,
       txid,
+      inscription,
     } = e;
 
     const Inscription: InscriptionResponseData = {
@@ -25,6 +26,7 @@ export const getInscriptionDataDecoded = (
       time: time,
       inscriptionNumber: inscriptionNumber,
       txid: txid,
+      contentType: inscription.contentType,
     };
     return Inscription;
   } catch (error) {

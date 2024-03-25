@@ -19,4 +19,5 @@ export interface InscriptionResponseData {
   txid: string;
   time: number;
   inscriptionNumber: number;
+  contentType: string;
 }
