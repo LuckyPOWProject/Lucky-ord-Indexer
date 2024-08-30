@@ -1,5 +1,6 @@
 import IndexerQuery from "../../shared/database/query-indexer";
 import QueryInscriptions from "../../shared/database/query-transaction";
+import SystemConfig from "../../shared/system/config";
 import Logger from "../../shared/system/logger";
 import {
   TransactionWithBlock,
@@ -10,8 +11,8 @@ import IndexInscriptions from "./Index-Valid-Inscriptions";
 import inscriptionTransferWork from "./Inscription-transfer-worker";
 import inscriptionFetchandStore from "./inscription-fetcher";
 
-const INSC_RANG = 200; // we will index 100 blocks transaction from inscription
-const INSC_BEHIND = 1; // lets add 5 block behinds
+const INSC_RANG = SystemConfig.maxscan; // we will index 100 blocks transaction from inscription
+const INSC_BEHIND = Number(SystemConfig.blockDiff); // lets add  block behinds
 
 const inscriptionIndex = async (indexerStatus: indexingStatus) => {
   Logger.Success("Starting to index inscription....");
@@ -40,7 +41,7 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
     let diffrence = LastTransactionIndexedBlock - LastInscriptionIndexedBlock;
 
     if (diffrence <= INSC_BEHIND) {
-      Logger.Success("Waiting 1sec before fetching new block...");
+      Logger.Success("Waiting 1 sec before fetching new block...");
 
       await Sleep(1 * 1000);
 
@@ -76,6 +77,7 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
     const Transactions = await QueryInscriptions.LoadTransactions(from, to);
 
     Logger.Success(`Loaded Transactions.....`);
+    
     if (Transactions.length === 0) {
       throw new Error("Faild to Load Transaction data");
     }

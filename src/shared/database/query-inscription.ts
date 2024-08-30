@@ -7,7 +7,6 @@ import { GetInscriptionUpdateQuery, Sleep } from "../../utils/indexer-utlis";
 import SystemConfig from "../system/config";
 import Logger from "../system/logger";
 import GetMongoConnection from "./connection-provider";
-import IndexerQuery from "./query-indexer";
 
 const inscriptionQuery = {
   storeInscription: async (data: inscriptionStoreModel[]) => {

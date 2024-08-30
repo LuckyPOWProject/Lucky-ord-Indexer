@@ -20,13 +20,14 @@ const BlockWoker = async (indexerStatus: indexingStatus) => {
      */
 
     if (new Decimal(LastSavedBlock + SystemConfig.blockDiff).gte(LatestBlock)) {
+
       Logger.Success(`All Blocked Scanned trying to sleep 1sec`);
 
       const NewLatestBlock = await DogecoinCLI.getLastsynedBlock();
 
       if (!NewLatestBlock) throw new Error("Faild to get new Block");
 
-      await Sleep(2 * 1000); //sleep 15sec
+      await Sleep(2 * 1000); //sleep 2sec
 
       if (LatestBlock === NewLatestBlock) continue;
 

@@ -12,7 +12,6 @@ import {
 } from "../types/dogecoin-interface";
 
 import * as bitcoin from "bitcoinjs-lib";
-import { ReverseHash } from "./indexer-utlis";
 
 class BlockHeaderDecoder {
   startIndex = 0;

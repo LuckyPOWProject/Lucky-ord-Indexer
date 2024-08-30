@@ -5,16 +5,23 @@ import cors from "cors";
 import InscriptionRoute from "./route/inscription-route";
 import morgan from "morgan";
 import UTXORoute from "./route/utxos";
+import { ServerResponseSuccess } from "./controller/server-response-handler";
 
 const App = express();
 
 App.use(cors({ origin: "*" }));
+
 App.use(
   morgan(
     ":method :url :status :res[content-length] - :response-time ms :remote-addr"
   )
 );
+App.get("/", (req, res) => {
+  res.send(ServerResponseSuccess("Ok"));
+});
+
 App.use(InscriptionRoute);
+
 App.use(UTXORoute);
 
 App.listen(SystemConfig.httpPort, () =>

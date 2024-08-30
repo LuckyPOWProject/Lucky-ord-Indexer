@@ -98,7 +98,8 @@ const inscriptionFetchandStore = async (
 
           inscription_id = inscription_id_;
           inscription_contentType = inscription_contentType_;
-          inscription_data = inscription_data_ || "" + inscriptionInInputs.data;
+          inscription_data =
+            (inscription_data_ || "") + inscriptionInInputs.data;
           txid = txid_;
           transactionIndex = transactionIndex_;
         }
