@@ -6,8 +6,6 @@ import { ReverseHash } from "./indexer-utlis";
 
 const op_code_to_num = (opcode: number | Buffer): number | undefined => {
   if (typeof opcode !== "number") {
-    if (opcode.length > 2) return undefined;
-
     if (opcode.length === 1) return opcode[0];
 
     if (opcode.length === 2) return opcode[1] * 256 + opcode[0];
