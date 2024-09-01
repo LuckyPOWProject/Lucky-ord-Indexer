@@ -4,6 +4,8 @@ import { ProtocolTag } from "../shared/system/protocol";
 import { inscriptionDataTemp } from "../types/inscription-interface";
 import { ReverseHash } from "./indexer-utlis";
 
+const OP_CODE_DELEGATION = 11;
+
 const op_code_to_num = (opcode: number | Buffer): number | undefined => {
   if (typeof opcode !== "number") {
     if (opcode.length === 1) return opcode[0];
@@ -76,7 +78,31 @@ const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
       const DataPices = op_code_to_num(TotalDataInjectedOp);
 
       const contentType = ScriptDecode.shift()?.toString();
-      // console.log(ScriptDecode);
+
+      if (contentType && contentType === "0") {
+        const Data_Length = op_code_to_num(ScriptDecode?.shift()!);
+
+        if (Data_Length !== 0) return;
+
+        const OP_Code = op_code_to_num(ScriptDecode[1]!);
+
+        if (OP_Code !== OP_CODE_DELEGATION) return;
+
+        const delegation = ScriptDecode[2] as Buffer;
+
+        if (delegation.byteLength !== 32) return;
+
+        const delegation_txid = delegation.reverse().toString("hex");
+
+        inscriptions.push({
+          delegation_txid: delegation_txid,
+          index: index,
+          isComplete: true,
+          IsremaingChunkPush: false,
+          previousHash: `${ReverseHash(e.txid)}:${e.vin}`,
+        });
+        return;
+      }
 
       const DoginalData = GetInscriptionFromChunk(
         Number(DataPices),

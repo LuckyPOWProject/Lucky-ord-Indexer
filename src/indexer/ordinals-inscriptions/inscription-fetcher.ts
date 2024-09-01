@@ -98,8 +98,8 @@ const inscriptionFetchandStore = async (
 
           inscription_id = inscription_id_;
           inscription_contentType = inscription_contentType_;
-          inscription_data = "chunk";
-          // (inscription_data_ || "") + inscriptionInInputs.data;
+          inscription_data =
+            (inscription_data_ || "") + inscriptionInInputs.data;
           txid = txid_;
           transactionIndex = transactionIndex_;
         }
@@ -147,10 +147,15 @@ const inscriptionFetchandStore = async (
           txid: transactions.txid,
           time: transactions.time,
           block: transactions.blockNumber,
-          inscription: {
-            contentType: inscription_contentType,
-            data: inscription_data,
-          },
+
+          ...(DecodedInputData[0].delegation_txid
+            ? { delegation_txid: DecodedInputData[0].delegation_txid }
+            : {
+                inscription: {
+                  contentType: inscription_contentType,
+                  data: inscription_data,
+                },
+              }),
           offset: 0,
         });
       }

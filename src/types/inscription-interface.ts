@@ -1,4 +1,5 @@
 export interface inscriptionDataTemp {
+  delegation_txid?: string;
   contentType?: string;
   data?: string;
   index?: number;
@@ -15,7 +16,8 @@ export interface inscription {
 export interface inscriptionStoreModel {
   id?: string;
   inscriptionNumber?: number;
-  inscription: inscription;
+  inscription?: inscription;
+  delegation_txid?: string;
   block: number;
   time?: number;
   txid: string;
