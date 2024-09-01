@@ -16,7 +16,9 @@ import Logger from "../../shared/system/logger";
 import DogecoinCLI from "../../api/dogecoin-core-rpc/node-connection";
 
 const MAX_ARRAYCACHE = 80_000;
+
 const BLOCK_REWARD = 10000 * 1e8;
+
 const inscriptionTransferWork = async (
   data: inscriptionStoreModel[],
   blockData: TransactionWithBlock[],
@@ -56,6 +58,7 @@ const inscriptionTransferWork = async (
       }
 
       const blockNumber = transaction.blockNumber;
+
       if (!TransactionMap.has(blockNumber)) {
         TransactionMap.set(blockNumber, []);
       }
@@ -437,6 +440,9 @@ const inscriptionTransferWork = async (
     Logger.Success(`Took ${TimerTook} to complete transfer logic...`);
 
     if (LoctionUpdateInscriptions.length) {
+      Logger.Success(
+        `Updating, ${LoctionUpdateInscriptions.length} Location for inscriptions...`
+      );
       await inscriptionQuery.UpdateInscriptionLocation(
         LoctionUpdateInscriptions
       );
