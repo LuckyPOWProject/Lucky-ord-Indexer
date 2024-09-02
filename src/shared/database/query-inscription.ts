@@ -132,7 +132,7 @@ const inscriptionQuery = {
     try {
       const conn = await GetMongoConnection();
       const db = conn.db(SystemConfig.database);
-      const collection = db.collection(SystemConfig.collectionChunks);
+      const collection = db.collection(SystemConfig.collectionHistory);
       await collection.insertMany(data);
     } catch (error) {
       throw error;
