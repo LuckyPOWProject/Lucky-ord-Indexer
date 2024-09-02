@@ -12,6 +12,7 @@ const SystemConfig = {
   database: process.env.database || "",
   collectionInscription: process.env.collectionInscription || "",
   collectionChunks: "chunks_data",
+  collectionHistory: "history",
   collectionTransaction: process.env.collectionTransaction || "",
   collectionPendingInscription: process.env.collectionPendingInscription || "",
   collectionIndexer: process.env.collectionIndexer || "",

@@ -126,6 +126,7 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
         FetchInscriptions.pending,
         InscriptionTransfer.LoctionUpdateInscriptions,
         FetchInscriptions.InscriptionChunks,
+        InscriptionTransfer.TransfersHistory,
         InscriptionTransfer.invalidInscriptionsIds,
         currentInscriptioNumber
       );

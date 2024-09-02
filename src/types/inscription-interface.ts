@@ -47,3 +47,12 @@ export interface InscriptionChunks {
   id: string;
   data: string;
 }
+
+export interface inscriptionTransfer {
+  from: string;
+  to: string;
+  time: number;
+  block: number;
+  txid: string;
+  inscription_id: string;
+}

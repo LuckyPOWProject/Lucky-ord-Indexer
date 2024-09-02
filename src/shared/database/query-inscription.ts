@@ -1,6 +1,7 @@
 import {
   InscriptionChunks,
   LoctionUpdates,
+  inscriptionTransfer,
 } from "../../types/inscription-interface";
 import {
   inscriptionIncomplete,
@@ -122,6 +123,16 @@ const inscriptionQuery = {
       const db = conn.db(SystemConfig.database);
       const collection = db.collection(SystemConfig.collectionChunks);
 
+      await collection.insertMany(data);
+    } catch (error) {
+      throw error;
+    }
+  },
+  storeInscriptionTransferHistory: async (data: inscriptionTransfer[]) => {
+    try {
+      const conn = await GetMongoConnection();
+      const db = conn.db(SystemConfig.database);
+      const collection = db.collection(SystemConfig.collectionChunks);
       await collection.insertMany(data);
     } catch (error) {
       throw error;

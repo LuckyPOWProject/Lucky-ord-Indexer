@@ -3,6 +3,7 @@ import {
   InscriptionChunks,
   inscriptionIncomplete,
   inscriptionStoreModel,
+  inscriptionTransfer,
   LoctionUpdates,
 } from "../../types/inscription-interface";
 
@@ -11,6 +12,7 @@ const IndexInscriptions = async (
   pending: inscriptionIncomplete[],
   LocationUpdateInscription: LoctionUpdates[],
   inscriptionChunks: InscriptionChunks[],
+  TransfersHistory: inscriptionTransfer[],
   invalidInscriptions: Set<string>,
   inscriptionNumberCount: number = 0
 ) => {
@@ -61,6 +63,12 @@ const IndexInscriptions = async (
     if (LocationUpdateInscription.length) {
       QPromise.push(
         inscriptionQuery.UpdateInscriptionLocation(LocationUpdateInscription)
+      );
+    }
+
+    if (TransfersHistory.length) {
+      QPromise.push(
+        inscriptionQuery.storeInscriptionTransferHistory(TransfersHistory)
       );
     }
 

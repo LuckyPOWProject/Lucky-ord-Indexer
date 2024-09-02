@@ -4,7 +4,10 @@ import {
   TransactionWithBlock,
   coinbaseTrasactionMeta,
 } from "../../types/dogecoin-interface";
-import { inscriptionStoreModel } from "../../types/inscription-interface";
+import {
+  inscriptionStoreModel,
+  inscriptionTransfer,
+} from "../../types/inscription-interface";
 import {
   FetchMissingInputsValue,
   GetTransactionFeeSum,
@@ -32,6 +35,8 @@ const inscriptionTransferWork = async (
 
     const MatchedLoctionCache: Record<string, string[]> = {};
 
+    const InscriptionOwner: Record<string, string> = {};
+
     let BlockInscriptions = data;
 
     const InscriptionOnBlock = new Set(BlockInscriptions.map((e) => e.id));
@@ -39,6 +44,8 @@ const inscriptionTransferWork = async (
     const InputIds: string[][] = [[]];
 
     const LoctionUpdateInscriptions: LoctionUpdates[] = [];
+
+    const TransfersHistory: inscriptionTransfer[] = [];
 
     const invalidInscriptions = new Set<string>();
 
@@ -87,11 +94,19 @@ const inscriptionTransferWork = async (
         const Inscriptions =
           (await inscriptionQuery.LoadMatchLoctionInscriptions(e)) || [];
         return Inscriptions?.map(
-          (e): { inscription: string; location: string; offset: number } => {
+          (
+            e
+          ): {
+            inscription: string;
+            location: string;
+            offset: number;
+            owner: string;
+          } => {
             return {
               inscription: e.id,
               location: e.location,
               offset: e.offset,
+              owner: e.owner,
             };
           }
         );
@@ -100,20 +115,31 @@ const inscriptionTransferWork = async (
 
     const Inscription = MatchedInscriptionLocation.flat(1).concat(
       BlockInscriptions.map(
-        (e): { inscription: string; location: string; offset: number } => {
+        (
+          e
+        ): {
+          inscription: string;
+          location: string;
+          offset: number;
+          owner: string;
+        } => {
           return {
             inscription: e?.id || "",
             location: e.location,
             offset: e.offset,
+            owner: e.owner!,
           };
         }
       )
     );
 
     Inscription.map((e) => {
-      if (!e.location || !e.inscription) return;
+      if (!e.location || !e.inscription || !e.owner) return;
+
+      InscriptionOwner[e.inscription] = e.owner;
 
       const IsExist = MatchedLoctionCache[e.location];
+
       if (!IsExist) {
         MatchedLoctionCache[e.location] = [`${e.inscription}:${e.offset}`];
       } else {
@@ -348,6 +374,19 @@ const inscriptionTransferWork = async (
 
           const IsInscribedInSameBlock = InscriptionOnBlock.has(InscriptionId);
 
+          //track the history
+          TransfersHistory.push({
+            inscription_id: InscriptionId,
+            txid: DoginalsTransfer.txid,
+            block: DoginalsTransfer.blockNumber,
+            time: DoginalsTransfer.time,
+            from: InscriptionOwner[InscriptionId],
+            to: newowner,
+          });
+
+          //update new owner in cache
+          InscriptionOwner[InscriptionId] = newowner;
+
           if (IsInscribedInSameBlock) {
             /**
              * Now we need to search the inscription from the data array and
@@ -443,6 +482,7 @@ const inscriptionTransferWork = async (
       LoctionUpdateInscriptions: LoctionUpdateInscriptions,
       BlockInscriptions: BlockInscriptions,
       invalidInscriptionsIds: invalidInscriptions,
+      TransfersHistory: TransfersHistory,
     };
   } catch (error) {
     throw error;
