@@ -19,7 +19,7 @@ const BlockWoker = async (indexerStatus: indexingStatus) => {
      * Check the latest indexing block status
      */
 
-    if (new Decimal(LastSavedBlock + SystemConfig.blockDiff).gte(LatestBlock)) {
+    if (LastSavedBlock + Number(SystemConfig.blockDiff) >= LatestBlock) {
       Logger.Success(`All Blocked Scanned trying to sleep 1sec`);
 
       const NewLatestBlock = await DogecoinCLI.getLastsynedBlock();
