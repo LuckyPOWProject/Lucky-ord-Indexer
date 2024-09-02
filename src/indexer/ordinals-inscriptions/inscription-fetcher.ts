@@ -108,8 +108,7 @@ const inscriptionFetchandStore = async (
           );
 
           if (isChunkAdded) {
-            isChunkAdded.data =
-              (inscription_data_ || "") + inscriptionInInputs.data;
+            isChunkAdded.data = isChunkAdded.data + inscriptionInInputs.data;
           } else {
             InscriptionChunks.push({
               id: inscription_id,
