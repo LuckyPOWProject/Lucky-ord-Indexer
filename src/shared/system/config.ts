@@ -11,13 +11,14 @@ const SystemConfig = {
   mongAuth: process.env.url || "",
   database: process.env.database || "",
   collectionInscription: process.env.collectionInscription || "",
+  collectionChunks: "chunks_data",
   collectionTransaction: process.env.collectionTransaction || "",
   collectionPendingInscription: process.env.collectionPendingInscription || "",
   collectionIndexer: process.env.collectionIndexer || "",
   collectionBlocks: process.env.collectionBlockNumberToHex || "",
   maxscan: Number(process.env.maxscan),
   startIndex: String(process.env.startIndex),
-  blockDiff: String(process.env.blockdiff) ,
+  blockDiff: String(process.env.blockdiff),
   //server config
   httpPort: process.env.httpPortServer,
 };

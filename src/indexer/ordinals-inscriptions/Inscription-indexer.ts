@@ -77,7 +77,7 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
     const Transactions = await QueryInscriptions.LoadTransactions(from, to);
 
     Logger.Success(`Loaded Transactions.....`);
-    
+
     if (Transactions.length === 0) {
       throw new Error("Faild to Load Transaction data");
     }
@@ -124,6 +124,8 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
       currentInscriptioNumber = await IndexInscriptions(
         InscriptionTransfer.BlockInscriptions,
         FetchInscriptions.pending,
+        InscriptionTransfer.LoctionUpdateInscriptions,
+        FetchInscriptions.InscriptionChunks,
         InscriptionTransfer.invalidInscriptionsIds,
         currentInscriptioNumber
       );

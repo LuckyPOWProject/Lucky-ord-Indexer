@@ -1,6 +1,7 @@
 import inscriptionQuery from "../../shared/database/query-inscription";
 import { TransactionWithBlock } from "../../types/dogecoin-interface";
 import {
+  InscriptionChunks,
   inscriptionIncomplete,
   inscriptionStoreModel,
 } from "../../types/inscription-interface";
@@ -11,6 +12,7 @@ interface inscriptionFetchout {
   pending: inscriptionIncomplete[];
   inscriptions: inscriptionStoreModel[];
   locations: Record<string, string>;
+  InscriptionChunks: InscriptionChunks[];
 }
 
 const inscriptionFetchandStore = async (
@@ -21,7 +23,7 @@ const inscriptionFetchandStore = async (
       {};
 
     const inscriptionData: inscriptionStoreModel[] = [];
-
+    const InscriptionChunks: InscriptionChunks[] = [];
     let pendinginscriptions: inscriptionIncomplete[] = [];
 
     /**
@@ -85,7 +87,7 @@ const inscriptionFetchandStore = async (
             inscription_id_ = pendingInscriptionFromDb.id;
             inscription_contentType_ =
               pendingInscriptionFromDb.inscription.contentType;
-            inscription_data_ = pendingInscriptionFromDb.inscription.data;
+            //inscription_data_ = pendingInscriptionFromDb.inscription.data;
             txid = pendingInscriptionFromDb.txid;
             transactionIndex_ = pendingInscriptionFromDb.index;
 
@@ -98,8 +100,24 @@ const inscriptionFetchandStore = async (
 
           inscription_id = inscription_id_;
           inscription_contentType = inscription_contentType_;
+
+          //check if inscriptionchunks is added already
+
+          const isChunkAdded = InscriptionChunks.find(
+            (a) => a.id === inscription_id
+          );
+
+          if (isChunkAdded) {
+            isChunkAdded.data =
+              (inscription_data_ || "") + inscriptionInInputs.data;
+          } else {
+            InscriptionChunks.push({
+              id: inscription_id,
+              data: (inscription_data_ || "") + inscriptionInInputs.data,
+            });
+          }
+
           inscription_data = "chunks";
-          // (inscription_data_ || "") + inscriptionInInputs.data;
           txid = txid_;
           transactionIndex = transactionIndex_;
         }
@@ -164,6 +182,7 @@ const inscriptionFetchandStore = async (
       locations: LocationTracker,
       pending: pendinginscriptions,
       inscriptions: inscriptionData,
+      InscriptionChunks: InscriptionChunks,
     };
   } catch (error) {
     throw error;

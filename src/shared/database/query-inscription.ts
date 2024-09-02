@@ -1,4 +1,7 @@
-import { LoctionUpdates } from "../../types/inscription-interface";
+import {
+  InscriptionChunks,
+  LoctionUpdates,
+} from "../../types/inscription-interface";
 import {
   inscriptionIncomplete,
   inscriptionStoreModel,
@@ -73,7 +76,7 @@ const inscriptionQuery = {
 
       const Query = { location: { $in: location } };
 
-      const projection = { id: 1, location: 1, offset: 1 };
+      const projection = { id: 1, location: 1, offset: 1, owner: 1 };
 
       const data = await collection
         .find(Query, { projection: projection })
@@ -98,6 +101,30 @@ const inscriptionQuery = {
       Logger.error("Error updating inscription");
       await Sleep(10 * 60);
       return await inscriptionQuery.UpdateInscriptionLocation(data);
+    }
+  },
+
+  deleteInscriptionChunks: async (id: string) => {
+    try {
+      const conn = await GetMongoConnection();
+      const db = conn.db(SystemConfig.database);
+      const collection = db.collection(SystemConfig.collectionChunks);
+
+      await collection.deleteMany({ id: id });
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  storeInscriptionChunks: async (data: InscriptionChunks[]) => {
+    try {
+      const conn = await GetMongoConnection();
+      const db = conn.db(SystemConfig.database);
+      const collection = db.collection(SystemConfig.collectionChunks);
+
+      await collection.insertMany(data);
+    } catch (error) {
+      throw error;
     }
   },
 };

@@ -1,12 +1,16 @@
 import inscriptionQuery from "../../shared/database/query-inscription";
 import {
+  InscriptionChunks,
   inscriptionIncomplete,
   inscriptionStoreModel,
+  LoctionUpdates,
 } from "../../types/inscription-interface";
 
 const IndexInscriptions = async (
   data: inscriptionStoreModel[],
   pending: inscriptionIncomplete[],
+  LocationUpdateInscription: LoctionUpdates[],
+  inscriptionChunks: InscriptionChunks[],
   invalidInscriptions: Set<string>,
   inscriptionNumberCount: number = 0
 ) => {
@@ -21,6 +25,9 @@ const IndexInscriptions = async (
       if (!inscriptions.id) continue;
 
       if (invalidInscriptions.has(inscriptions?.id)) {
+        if (inscriptions.inscription?.data === "chunk") {
+          await inscriptionQuery.deleteInscriptionChunks(inscriptions.id);
+        }
         continue;
       }
 
@@ -50,6 +57,16 @@ const IndexInscriptions = async (
 
     if (SafePending.length)
       QPromise.push(inscriptionQuery.storePendingInscriptions(SafePending));
+
+    if (LocationUpdateInscription.length) {
+      QPromise.push(
+        inscriptionQuery.UpdateInscriptionLocation(LocationUpdateInscription)
+      );
+    }
+
+    if (inscriptionChunks.length) {
+      QPromise.push(inscriptionQuery.storeInscriptionChunks(inscriptionChunks));
+    }
 
     await Promise.all(QPromise);
 

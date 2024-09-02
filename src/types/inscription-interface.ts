@@ -43,3 +43,7 @@ export interface LoctionUpdates {
   offset: number;
   owner: string;
 }
+export interface InscriptionChunks {
+  id: string;
+  data: string;
+}
