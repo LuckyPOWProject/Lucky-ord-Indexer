@@ -60,11 +60,11 @@ const IndexInscriptions = async (
     if (SafePending.length)
       QPromise.push(inscriptionQuery.storePendingInscriptions(SafePending));
 
-    // if (LocationUpdateInscription.length) {
-    //   QPromise.push(
-    //     inscriptionQuery.UpdateInscriptionLocation(LocationUpdateInscription)
-    //   );
-    // }
+    if (LocationUpdateInscription.length) {
+      QPromise.push(
+        inscriptionQuery.UpdateInscriptionLocation(LocationUpdateInscription)
+      );
+    }
 
     if (TransfersHistory.length) {
       QPromise.push(

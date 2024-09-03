@@ -119,7 +119,8 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
 
     if (
       InscriptionTransfer.BlockInscriptions.length ||
-      FetchInscriptions.pending.length
+      FetchInscriptions.pending.length ||
+      InscriptionTransfer.LoctionUpdateInscriptions.length
     ) {
       currentInscriptioNumber = await IndexInscriptions(
         InscriptionTransfer.BlockInscriptions,

@@ -480,11 +480,6 @@ const inscriptionTransferWork = async (
 
     Logger.Success(`Took ${TimerTook} to complete transfer logic...`);
 
-    if (LoctionUpdateInscriptions.length) {
-      await inscriptionQuery.UpdateInscriptionLocation(
-        LoctionUpdateInscriptions
-      );
-    }
     return {
       LoctionUpdateInscriptions: LoctionUpdateInscriptions,
       BlockInscriptions: BlockInscriptions,
