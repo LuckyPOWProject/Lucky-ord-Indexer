@@ -70,7 +70,9 @@ const inscriptionTransferWork = async (
         TransactionMap.set(blockNumber, []);
       }
       const BlockHouse = TransactionMap.get(blockNumber);
+
       if (!BlockHouse) throw new Error("Block has not been init");
+
       BlockHouse.push(transaction);
 
       transaction.outputs.map((e) => {
@@ -478,6 +480,11 @@ const inscriptionTransferWork = async (
 
     Logger.Success(`Took ${TimerTook} to complete transfer logic...`);
 
+    if (LoctionUpdateInscriptions.length) {
+      await inscriptionQuery.UpdateInscriptionLocation(
+        LoctionUpdateInscriptions
+      );
+    }
     return {
       LoctionUpdateInscriptions: LoctionUpdateInscriptions,
       BlockInscriptions: BlockInscriptions,
