@@ -3,6 +3,7 @@ import { GetInscription } from "./get-inscription";
 import getAddressInscriptions from "./get-address-inscriptions";
 import getInscriptionContent from "./get-inscription-content";
 import GetInscriptionInLocation from "./get-inscription-in-location";
+import getInscriptions from "./get-inscriptions";
 
 const InscriptionRoute = express.Router();
 
@@ -21,4 +22,9 @@ InscriptionRoute.get("/content/:id", async (req, res) =>
 InscriptionRoute.get("/location/:id", async (req, res) =>
   GetInscriptionInLocation(req, res)
 );
+
+InscriptionRoute.get("/inscriptions", async (req, res) =>
+  getInscriptions(req, res)
+);
+
 export default InscriptionRoute;

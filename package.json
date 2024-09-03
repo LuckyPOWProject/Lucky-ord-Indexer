@@ -1,12 +1,11 @@
 {
   "name": "doginal-indexer",
   "version": "1.0.0",
-  "type": "module",
   "description": "A doginal Indexing lib by ordifind.com",
   "main": "index.js",
   "scripts": {
     "test": "mocha --require ts-node/register 'test/**/*.test.ts'",
-    "dev": "tsc && node ./build/index.js"
+    "dev": "ts-node-dev ./src/index"
   },
   "keywords": [
     "indexer",

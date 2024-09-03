@@ -23,9 +23,27 @@ const getInscriptionContent = async (req: Request, res: Response) => {
     const InscriptionContentObj = InscriptionData.inscription;
 
     const contentType = InscriptionContentObj.contentType;
-    const content = InscriptionContentObj.data;
+    let content = InscriptionContentObj.data;
+
+    if (content === "chunks") {
+      //load chunks
+
+      const chunksData = await InscriptionhttpQuery.getChunksContent(
+        InscriptionID
+      );
+
+      if (!chunksData) return res.send(ErrorResponse("Inscription not found!"));
+
+      content = "";
+      for (const chunk of chunksData) {
+        content += chunk.data;
+      }
+    }
+
     const contentT = memetype.contentType(contentType);
+
     if (!contentT) return res.send(ErrorResponse("Invalid content type"));
+
     res.setHeader("Content-Type", contentT);
 
     return res.send(Buffer.from(content, "hex"));

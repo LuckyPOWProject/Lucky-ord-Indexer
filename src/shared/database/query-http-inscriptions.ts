@@ -9,7 +9,48 @@ const GetDBTemplate = async () => {
   return collection;
 };
 
+const getChunkTemplate = async () => {
+  const connection = await GetMongoConnection();
+  const db = connection.db(SystemConfig.database);
+  const collection = db.collection(SystemConfig.collectionChunks);
+  return collection;
+};
+
 const InscriptionhttpQuery = {
+  getInscriptions: async (
+    limit: number,
+    offset: number,
+    contentType?: string
+  ) => {
+    try {
+      const DB = await GetDBTemplate();
+
+      const Query = [
+        {
+          $match: !contentType
+            ? {}
+            : { "inscription.contentType": contentType },
+        },
+        {
+          $facet: {
+            // DataCount: [{ $count: "count" }],
+            Data: [
+              { $sort: { inscriptionNumber: -1 } },
+              { $skip: offset },
+              { $limit: limit },
+            ],
+          },
+        },
+      ];
+      console.log(JSON.stringify(Query));
+      const Data = await DB.aggregate(Query).toArray();
+      return Data.length && Data[0].Data.length ? Data : false;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  },
+
   getInscription: async (id: string, key: DataTypes) => {
     try {
       const DB = await GetDBTemplate();
@@ -22,6 +63,17 @@ const InscriptionhttpQuery = {
     } catch (error) {
       return false;
     }
+  },
+
+  getChunksContent: async (id: string) => {
+    try {
+      const DB = await getChunkTemplate();
+
+      const data = await DB.find({ id: id }).sort({ _id: 1 }).toArray();
+
+      if (!data.length) return;
+      return data;
+    } catch (error) {}
   },
 
   getInscriptionsForKey: async (
