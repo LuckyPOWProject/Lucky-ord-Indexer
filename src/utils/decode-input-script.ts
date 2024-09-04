@@ -80,35 +80,34 @@ const DecodeInputScript = (inputs: inputs[]): inscriptionDataTemp[] => {
       const contentType = ScriptDecode.shift()?.toString();
 
       if (contentType && contentType === "0") {
-        const Data_Length = op_code_to_num(ScriptDecode?.shift()!);
+        const Data_Length = op_code_to_num(ScriptDecode[0]!);
 
-        if (Data_Length !== 0) return;
+        const OP_Code = op_code_to_num(ScriptDecode[2]!);
 
-        const OP_Code = op_code_to_num(ScriptDecode[1]!);
+        if (OP_Code === OP_CODE_DELEGATION) {
+          if (Data_Length !== 0) return;
 
-        if (OP_Code !== OP_CODE_DELEGATION) return;
+          const delegation = ScriptDecode[3] as Buffer;
 
-        const delegation = ScriptDecode[2] as Buffer;
+          if (delegation.byteLength !== 32) return;
 
-        if (delegation.byteLength !== 32) return;
+          const delegation_txid = delegation.reverse().toString("hex");
 
-        const delegation_txid = delegation.reverse().toString("hex");
-
-        inscriptions.push({
-          delegation_txid: delegation_txid,
-          index: index,
-          isComplete: true,
-          IsremaingChunkPush: false,
-          previousHash: `${ReverseHash(e.txid)}:${e.vin}`,
-        });
-        return;
+          inscriptions.push({
+            delegation_txid: delegation_txid,
+            index: index,
+            isComplete: true,
+            IsremaingChunkPush: false,
+            previousHash: `${ReverseHash(e.txid)}:${e.vin}`,
+          });
+          return;
+        }
       }
 
       const DoginalData = GetInscriptionFromChunk(
         Number(DataPices),
         ScriptDecode
       );
-
       if (DoginalData.doginalData.length && contentType?.length)
         inscriptions.push({
           data: DoginalData.doginalData.toString("hex"),

@@ -6,6 +6,7 @@ import InscriptionRoute from "./route/inscription-route";
 import morgan from "morgan";
 import UTXORoute from "./route/utxos";
 import { ServerResponseSuccess } from "./controller/server-response-handler";
+import HistoryRoute from "./route/history-route";
 
 const App = express();
 
@@ -23,7 +24,7 @@ App.get("/", (req, res) => {
 App.use(InscriptionRoute);
 
 App.use(UTXORoute);
-
+App.use(HistoryRoute);
 App.listen(SystemConfig.httpPort, () =>
   Logger.Success(`App is running in Port ${SystemConfig.httpPort}`)
 );

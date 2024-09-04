@@ -164,7 +164,6 @@ const inscriptionFetchandStore = async (
           txid: transactions.txid,
           time: transactions.time,
           block: transactions.blockNumber,
-
           ...(DecodedInputData[0].delegation_txid
             ? { delegation_txid: DecodedInputData[0].delegation_txid }
             : {

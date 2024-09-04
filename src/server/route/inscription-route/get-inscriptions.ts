@@ -56,7 +56,7 @@ const getInscriptions = async (req: Request, res: Response) => {
     if (!InscriptionData)
       return res.send(ErrorResponse("Faild to load inscriptions"));
 
-    const DataToServe = MultInscriptionResponse(InscriptionData);
+    const DataToServe = MultInscriptionResponse([{ Data: InscriptionData }]);
 
     if (!DataToServe) throw new Error("Faild to serve data");
 

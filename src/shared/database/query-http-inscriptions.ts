@@ -25,26 +25,14 @@ const InscriptionhttpQuery = {
     try {
       const DB = await GetDBTemplate();
 
-      const Query = [
-        {
-          $match: !contentType
-            ? {}
-            : { "inscription.contentType": contentType },
-        },
-        {
-          $facet: {
-            // DataCount: [{ $count: "count" }],
-            Data: [
-              { $sort: { inscriptionNumber: -1 } },
-              { $skip: offset },
-              { $limit: limit },
-            ],
-          },
-        },
-      ];
-      console.log(JSON.stringify(Query));
-      const Data = await DB.aggregate(Query).toArray();
-      return Data.length && Data[0].Data.length ? Data : false;
+      const Data = await DB.find(
+        !contentType ? {} : { "inscription.contentType": contentType }
+      )
+        .sort({ inscriptionNumber: -1 })
+        .limit(limit)
+        .skip(offset)
+        .toArray();
+      return Data.length ? Data : false;
     } catch (error) {
       console.log(error);
       return false;
