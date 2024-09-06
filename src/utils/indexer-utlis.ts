@@ -89,6 +89,7 @@ export const FetchMissingInputsValue = async (
     });
     return txDecoded;
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };

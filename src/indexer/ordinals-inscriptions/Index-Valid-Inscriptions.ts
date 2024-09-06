@@ -14,7 +14,8 @@ const IndexInscriptions = async (
   inscriptionChunks: InscriptionChunks[],
   TransfersHistory: inscriptionTransfer[],
   invalidInscriptions: Set<string>,
-  inscriptionNumberCount: number = 0
+  inscriptionNumberCount: number = 0,
+  pendinginscriptionsToDelete: string[]
 ) => {
   try {
     const SafeInscriptions: inscriptionStoreModel[] = [];
@@ -74,6 +75,14 @@ const IndexInscriptions = async (
 
     if (inscriptionChunks.length) {
       QPromise.push(inscriptionQuery.storeInscriptionChunks(inscriptionChunks));
+    }
+
+    if (pendinginscriptionsToDelete.length) {
+      QPromise.push(
+        inscriptionQuery.deletePendingInscriptionsBulk(
+          pendinginscriptionsToDelete
+        )
+      );
     }
 
     await Promise.all(QPromise);

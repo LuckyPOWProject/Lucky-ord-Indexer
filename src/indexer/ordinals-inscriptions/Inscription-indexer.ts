@@ -129,7 +129,8 @@ const inscriptionIndex = async (indexerStatus: indexingStatus) => {
         FetchInscriptions.InscriptionChunks,
         InscriptionTransfer.TransfersHistory,
         InscriptionTransfer.invalidInscriptionsIds,
-        currentInscriptioNumber
+        currentInscriptioNumber,
+        FetchInscriptions.pendingInscriptionToDelete
       );
 
       await IndexerQuery.UpdateNextInscriptionNumber(currentInscriptioNumber);

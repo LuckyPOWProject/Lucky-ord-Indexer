@@ -13,6 +13,7 @@ interface inscriptionFetchout {
   inscriptions: inscriptionStoreModel[];
   locations: Record<string, string>;
   InscriptionChunks: InscriptionChunks[];
+  pendingInscriptionToDelete: string[];
 }
 
 const inscriptionFetchandStore = async (
@@ -21,7 +22,7 @@ const inscriptionFetchandStore = async (
   try {
     const inscriptionInCompleteCache: Record<string, inscriptionIncomplete> =
       {};
-
+    const pendinginscriptionsToDelete: string[] = [];
     const inscriptionData: inscriptionStoreModel[] = [];
     const InscriptionChunks: InscriptionChunks[] = [];
     let pendinginscriptions: inscriptionIncomplete[] = [];
@@ -90,10 +91,7 @@ const inscriptionFetchandStore = async (
             //inscription_data_ = pendingInscriptionFromDb.inscription.data;
             txid = pendingInscriptionFromDb.txid;
             transactionIndex_ = pendingInscriptionFromDb.index;
-
-            await inscriptionQuery.DeletePendingInscriptions(
-              inscriptionInInputs.previousHash
-            );
+            pendinginscriptionsToDelete.push(inscriptionInInputs.previousHash);
           }
 
           delete inscriptionInCompleteCache[inscriptionInInputs.previousHash];
@@ -181,6 +179,7 @@ const inscriptionFetchandStore = async (
       pending: pendinginscriptions,
       inscriptions: inscriptionData,
       InscriptionChunks: InscriptionChunks,
+      pendingInscriptionToDelete: pendinginscriptionsToDelete,
     };
   } catch (error) {
     throw error;

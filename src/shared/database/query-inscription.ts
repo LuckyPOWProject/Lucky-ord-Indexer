@@ -138,6 +138,27 @@ const inscriptionQuery = {
       throw error;
     }
   },
+  deletePendingInscriptionsBulk: async (hash: string[]) => {
+    try {
+      const conn = await GetMongoConnection();
+      const db = conn.db(SystemConfig.database);
+      const collection = db.collection(
+        SystemConfig.collectionPendingInscription
+      );
+
+      await collection.bulkWrite([
+        {
+          deleteOne: {
+            filter: {
+              location: { $in: hash },
+            },
+          },
+        },
+      ]);
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default inscriptionQuery;
