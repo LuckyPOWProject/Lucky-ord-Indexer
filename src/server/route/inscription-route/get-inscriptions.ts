@@ -14,6 +14,7 @@ const ValidContentType = [
   "gif",
   "html",
   "javascript",
+  "3d",
 ];
 type InscriptionType =
   | "all"
@@ -22,7 +23,8 @@ type InscriptionType =
   | "jpeg"
   | "gif"
   | "html"
-  | "javascript";
+  | "javascript"
+  | "3d";
 
 const ContentTypeMatch: Record<InscriptionType, string> = {
   all: "all",
@@ -32,6 +34,7 @@ const ContentTypeMatch: Record<InscriptionType, string> = {
   gif: "image/gif",
   html: "text/html; charset=utf-8",
   javascript: "text/javascript",
+  "3d": "model/gltf-binary",
 };
 
 const getInscriptions = async (req: Request, res: Response) => {
@@ -40,7 +43,6 @@ const getInscriptions = async (req: Request, res: Response) => {
     const offset = Number(req.query.offset) || 0;
 
     const InscriptionType = (req.query.contentType as InscriptionType) || "all";
-
     if (isNaN(limit) || isNaN(offset))
       return res.send(ErrorResponse("Invalid Limit or Offset"));
 

@@ -1,4 +1,5 @@
 import { TransactionWithBlock } from "../../types/dogecoin-interface";
+import { BlockSaved } from "../../types/inscription-interface";
 import SystemConfig from "../system/config";
 import GetMongoConnection from "./connection-provider";
 
@@ -72,6 +73,22 @@ const QueryTransactions = {
       if (count.insertedCount !== data.length) {
         throw new Error("Faild to insert some block hex");
       }
+    } catch (error) {
+      throw error;
+    }
+  },
+  getBlock: async (height: number) => {
+    try {
+      const connection = await GetMongoConnection();
+      const db = connection.db(SystemConfig.database);
+      const collection = db.collection(SystemConfig.collectionBlocks);
+
+      const count = await collection.findOne<BlockSaved>({
+        blockNumber: height,
+      });
+
+      if (!count) return;
+      return count;
     } catch (error) {
       throw error;
     }

@@ -1,5 +1,4 @@
 import { indexingStatus } from "../../types/dogecoin-interface";
-import { Decimal } from "decimal.js";
 import DogecoinCLI from "../../api/dogecoin-core-rpc/node-connection";
 import BlockIndexer from "./Block-Indexer";
 import Logger from "../../shared/system/logger";

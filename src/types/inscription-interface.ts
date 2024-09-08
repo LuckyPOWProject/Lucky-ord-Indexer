@@ -56,3 +56,8 @@ export interface inscriptionTransfer {
   txid: string;
   inscription_id: string;
 }
+
+export interface BlockSaved {
+  block: string;
+  number: number;
+}

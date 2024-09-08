@@ -7,6 +7,11 @@ export interface BlockHeader {
   noce?: number;
 }
 
+export interface LastBlock {
+  height: number;
+  hash: string;
+}
+
 export interface inputs {
   txid: string;
   vin: number;

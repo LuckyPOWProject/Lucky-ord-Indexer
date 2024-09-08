@@ -6,7 +6,6 @@ const IndexBlockTransaction = async (data: Block[]) => {
     const BlockNumber = blockData.number;
     const Transaction = blockData.transactions;
     const BlockHeader = blockData.blockheader;
-
     if (!BlockHeader?.blocktime)
       throw new Error(`Block time not exist in block ${BlockNumber}`);
 

@@ -12,6 +12,7 @@ import Logger from "../../shared/system/logger";
 import type { Block } from "../../types/dogecoin-interface";
 import BlockHeaderDecoder from "../../utils/blockheader-decoder";
 import IndexBlockTransaction from "./Index-Block-transaction";
+import { ReOrgChecker } from "./reorg-worker";
 
 const BlockIndexer = async (
   startBlock: number,
@@ -37,6 +38,11 @@ const BlockIndexer = async (
   for (let i = 0; i < MaxScan; i++) {
     BlocksToScan.push(startBlock + i);
   }
+
+  /**
+   *
+   * Check for reorg
+   */
 
   /**
    * Now we create a Promise of block to fetch all the block
@@ -80,7 +86,9 @@ const BlockIndexer = async (
     })
   );
 
-  const ValidBlockHexData = BlockHexData.filter((a) => a !== undefined);
+  const ValidBlockHexData = BlockHexData.filter((a) => a !== undefined).sort(
+    (a, b) => a.Block - b.Block
+  );
 
   if (ValidBlockHexData.length !== ValidBlockPromises.length)
     throw new Error("Block Hex Length and Hash length don't match");
@@ -106,6 +114,10 @@ const BlockIndexer = async (
   if (DecodeBlockData.length === 0) {
     throw new Error("Block decoded return 0 data");
   }
+
+  const PreviousHash = DecodeBlockData[0].blockheader?.previousBlockHash!;
+  const PreviousBlockNumber = startBlock - 1;
+  await ReOrgChecker({ hash: PreviousHash, height: PreviousBlockNumber });
 
   const BlockTransaction = await IndexBlockTransaction(DecodeBlockData);
 
