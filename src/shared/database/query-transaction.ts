@@ -84,7 +84,7 @@ const QueryTransactions = {
       const collection = db.collection(SystemConfig.collectionBlocks);
 
       const count = await collection.findOne<BlockSaved>({
-        blockNumber: height,
+        number: height,
       });
 
       if (!count) return;
