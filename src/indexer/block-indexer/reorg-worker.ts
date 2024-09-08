@@ -13,8 +13,12 @@ export const ReOrgChecker = async (lastBlock: LastBlock) => {
     );
     process.exit(1);
   }
-
-  if (lastBlock.hash.toLowerCase() !== lastBlockIndexed.block.toLowerCase()) {
+  if (
+    Buffer.from(lastBlock.hash, "hex")
+      .reverse()
+      .toString("hex")
+      .toLowerCase() !== lastBlockIndexed.block.toLowerCase()
+  ) {
     Logger.error(`Reorg occour in Block Height ${lastBlock.height}`);
     process.exit(1);
   }
