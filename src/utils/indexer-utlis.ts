@@ -168,9 +168,8 @@ export const GetTransactionFeeSum = async (
 
     const ST = SortedTransactions.sort((a, b) => a.index - b.index);
 
-    for (let i = 0; i < endIndex + 1; i++) {
+    for (let i = 0; i < endIndex - 1; i++) {
       const Transactions = ST[i];
-
       if (Transactions.coinbase) continue;
 
       const Fee = await GetTransactionFee(inputsValue, Transactions);
