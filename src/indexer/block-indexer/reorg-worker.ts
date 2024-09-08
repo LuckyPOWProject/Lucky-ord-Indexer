@@ -8,7 +8,9 @@ export const ReOrgChecker = async (lastBlock: LastBlock) => {
   const lastBlockIndexed = await QueryTransactions.getBlock(lastBlock.height);
 
   if (!lastBlockIndexed) {
-    Logger.error("last Indexed Block not found !");
+    Logger.error(
+      `last Indexed Block not found !, Searching: ${lastBlockIndexed}`
+    );
     process.exit(1);
   }
 
