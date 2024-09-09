@@ -42,7 +42,7 @@ const BlockWoker = async (indexerStatus: indexingStatus) => {
 
     const blockDiffScan = LatestBlock - LastSavedBlock;
 
-    if (blockDiffScan < MaxScan) MaxScan = blockDiffScan;
+    if (blockDiffScan < MaxScan) MaxScan = blockDiffScan - 1;
 
     Logger.Success(`Starting to Index Block from ${LastSavedBlock}....`);
 
