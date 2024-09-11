@@ -15,6 +15,9 @@ const ValidContentType = [
   "html",
   "javascript",
   "3d",
+  "svg",
+  "video",
+  "audio",
 ];
 type InscriptionType =
   | "all"
@@ -24,7 +27,10 @@ type InscriptionType =
   | "gif"
   | "html"
   | "javascript"
-  | "3d";
+  | "3d"
+  | "svg"
+  | "video"
+  | "audio";
 
 const ContentTypeMatch: Record<InscriptionType, string> = {
   all: "all",
@@ -35,6 +41,9 @@ const ContentTypeMatch: Record<InscriptionType, string> = {
   html: "text/html; charset=utf-8",
   javascript: "text/javascript",
   "3d": "model/gltf-binary",
+  svg: "image/svg+xml",
+  video: "video/mp4",
+  audio: "audio/mpeg",
 };
 
 const getInscriptions = async (req: Request, res: Response) => {
@@ -62,7 +71,13 @@ const getInscriptions = async (req: Request, res: Response) => {
 
     if (!DataToServe) throw new Error("Faild to serve data");
 
-    return res.send(ServerResponseSuccess(DataToServe));
+    const total = await InscriptionhttpQuery.countInscription(
+      InscriptionType !== "all" ? ContentTypeMatch[InscriptionType] : undefined
+    );
+
+    return res.send(
+      ServerResponseSuccess({ total: total, results: DataToServe })
+    );
   } catch (error) {
     return res.send(ErrorResponse("Somethings is not working"));
   }

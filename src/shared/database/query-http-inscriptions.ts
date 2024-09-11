@@ -1,6 +1,7 @@
 import { DataTypes } from "../../types/http-type";
 import SystemConfig from "../system/config";
 import GetMongoConnection from "./connection-provider";
+import IndexerQuery from "./query-indexer";
 
 const GetDBTemplate = async () => {
   const connection = await GetMongoConnection();
@@ -17,6 +18,23 @@ const getChunkTemplate = async () => {
 };
 
 const InscriptionhttpQuery = {
+  countInscription: async (contentType?: string) => {
+    const DB = await GetDBTemplate();
+
+    let total = 0;
+
+    if (contentType) {
+      const contentTypetotal = await DB.countDocuments({
+        "inscription.contentType": contentType,
+      });
+      total = contentTypetotal;
+    } else {
+      const indexerStatus = await IndexerQuery.LoadIndexerStatus();
+      total = indexerStatus.NextInscriptionNumber - 1;
+    }
+
+    return total;
+  },
   getInscriptions: async (
     limit: number,
     offset: number,
@@ -32,6 +50,7 @@ const InscriptionhttpQuery = {
         .limit(limit)
         .skip(offset)
         .toArray();
+
       return Data.length ? Data : false;
     } catch (error) {
       console.log(error);

@@ -20,7 +20,6 @@ const QueryHTTPHistory = {
         .toArray();
 
       if (!data.length) return false;
-
       return data;
     } catch (error) {
       return false;
