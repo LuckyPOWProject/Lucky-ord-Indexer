@@ -37,7 +37,9 @@ const GetInscriptionInLocation = async (req: Request, res: Response) => {
     if (!InscriptionData)
       return res.send(ErrorResponse("0 Inscription  found!"));
 
-    const InscriptionResponseData = MultInscriptionResponse(InscriptionData);
+    const InscriptionResponseData = await MultInscriptionResponse(
+      InscriptionData
+    );
 
     if (!InscriptionResponseData)
       return res.send(ErrorResponse("Faild to decode inscriptions"));

@@ -1,9 +1,10 @@
+import InscriptionhttpQuery from "../../shared/database/query-http-inscriptions";
 import Logger from "../../shared/system/logger";
-import { InscriptionResponseData } from "../../types/http-type";
+import { DataTypes, InscriptionResponseData } from "../../types/http-type";
 
-export const getInscriptionDataDecoded = (
+export const getInscriptionDataDecoded = async (
   e: any
-): InscriptionResponseData | boolean => {
+): Promise<boolean | InscriptionResponseData> => {
   try {
     const {
       id,
@@ -15,7 +16,20 @@ export const getInscriptionDataDecoded = (
       time,
       txid,
       inscription,
+      delegation_txid,
     } = e;
+
+    let contentType = inscription?.contentType;
+
+    if (delegation_txid) {
+      const inscription = await InscriptionhttpQuery.getInscription(
+        `${delegation_txid}i0`,
+        DataTypes.inscription_id
+      );
+      if (!inscription) return false;
+
+      contentType = inscription.inscription.contentType;
+    }
 
     const Inscription: InscriptionResponseData = {
       id: id,
@@ -26,7 +40,8 @@ export const getInscriptionDataDecoded = (
       time: time,
       inscriptionNumber: inscriptionNumber,
       txid: txid,
-      contentType: inscription.contentType,
+      ...(delegation_txid ? { delegation_id: `${delegation_txid}i0` } : {}),
+      contentType: contentType,
     };
     return Inscription;
   } catch (error) {
@@ -35,12 +50,14 @@ export const getInscriptionDataDecoded = (
   }
 };
 
-export const MultInscriptionResponse = (data: any[]) => {
+export const MultInscriptionResponse = async (data: any[]) => {
   try {
-    return data[0].Data.map((e: any) => {
-      const FormatedData = getInscriptionDataDecoded(e);
-      return FormatedData;
-    });
+    return await Promise.all(
+      data[0].Data.map(async (e: any) => {
+        const FormatedData = await getInscriptionDataDecoded(e);
+        return FormatedData;
+      })
+    );
   } catch (error) {
     Logger.error("Some error occoured while loading multi inscriptions...");
     return false;

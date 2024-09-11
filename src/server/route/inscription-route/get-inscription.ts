@@ -26,7 +26,9 @@ export const GetInscription = async (req: Request, res: Response) => {
     if (!InscriptionData)
       return res.send(ErrorResponse("Inscription not found!"));
 
-    const InscriptionResponseData = getInscriptionDataDecoded(InscriptionData);
+    const InscriptionResponseData = await getInscriptionDataDecoded(
+      InscriptionData
+    );
 
     if (!InscriptionResponseData)
       return res.send(ErrorResponse("Faild to decode inscriptions"));

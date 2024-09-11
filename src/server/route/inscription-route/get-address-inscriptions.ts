@@ -39,7 +39,7 @@ const getAddressInscriptions = async (req: Request, res: Response) => {
 
     //Now lets make Data Inscription Response format
 
-    const AddressInscriptionsResponse = MultInscriptionResponse(
+    const AddressInscriptionsResponse = await MultInscriptionResponse(
       InscriptionForAddress
     );
 

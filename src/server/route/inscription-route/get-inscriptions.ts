@@ -32,9 +32,9 @@ type InscriptionType =
   | "video"
   | "audio";
 
-const ContentTypeMatch: Record<InscriptionType, string> = {
+const ContentTypeMatch: Record<InscriptionType, string | string[]> = {
   all: "all",
-  text: "text/plain; charset=utf-8",
+  text: ["text/plain; charset=utf-8", "text/plain"],
   png: "image/png",
   jpeg: "image/jpeg",
   gif: "image/gif",
@@ -67,7 +67,9 @@ const getInscriptions = async (req: Request, res: Response) => {
     if (!InscriptionData)
       return res.send(ErrorResponse("Faild to load inscriptions"));
 
-    const DataToServe = MultInscriptionResponse([{ Data: InscriptionData }]);
+    const DataToServe = await MultInscriptionResponse([
+      { Data: InscriptionData },
+    ]);
 
     if (!DataToServe) throw new Error("Faild to serve data");
 

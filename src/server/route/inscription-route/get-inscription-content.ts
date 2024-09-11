@@ -22,34 +22,61 @@ const getInscriptionContent = async (req: Request, res: Response) => {
 
     const InscriptionContentObj = InscriptionData.inscription;
 
-    const contentType = InscriptionContentObj.contentType;
-    let content = InscriptionContentObj.data;
+    let contentType = InscriptionContentObj?.contentType;
+    let content = InscriptionContentObj?.data as string;
 
-    if (content === "chunks") {
-      //load chunks
+    const delegation_id = InscriptionData.delegation_txid;
 
-      const chunksData = await InscriptionhttpQuery.getChunksContent(
-        InscriptionID
+    let content_;
+    if (delegation_id) {
+      //load inscription
+
+      const inscription = await InscriptionhttpQuery.getInscription(
+        `${delegation_id}i0`,
+        InscriptionDataType
       );
 
-      if (!chunksData) return res.send(ErrorResponse("Inscription not found!"));
+      if (!inscription) throw new Error("delegation_id not found");
 
-      content = "";
-      for (const chunk of chunksData) {
-        content += chunk.data;
-      }
+      content_ = await LoadContent(
+        inscription.inscription.data as string,
+        `${delegation_id}i0`
+      );
+      contentType = inscription.inscription.contentType;
+    } else {
+      content_ = await LoadContent(content, InscriptionID);
     }
 
     const contentT = memetype.contentType(contentType);
 
     if (!contentT) return res.send(ErrorResponse("Invalid content type"));
 
-    res.setHeader("Content-Type", contentT);
+    res.setHeader("Content-Type", content_!);
 
-    return res.send(Buffer.from(content, "hex"));
+    return res.send(Buffer.from(content_, "hex"));
   } catch (error) {
+    console.log(error);
     return res.send(ErrorResponse("Internal Server Error!"));
   }
 };
 
 export default getInscriptionContent;
+
+const LoadContent = async (content: string, InscriptionID: string) => {
+  if (content === "chunks") {
+    //load chunks
+
+    const chunksData = await InscriptionhttpQuery.getChunksContent(
+      InscriptionID
+    );
+
+    if (!chunksData) return "";
+
+    content = "";
+    for (const chunk of chunksData) {
+      content += chunk.data;
+    }
+    return content;
+  }
+  return content;
+};

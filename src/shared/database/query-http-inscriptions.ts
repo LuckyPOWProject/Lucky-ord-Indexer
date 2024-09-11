@@ -18,14 +18,15 @@ const getChunkTemplate = async () => {
 };
 
 const InscriptionhttpQuery = {
-  countInscription: async (contentType?: string) => {
+  countInscription: async (contentType?: string | string[]) => {
     const DB = await GetDBTemplate();
 
     let total = 0;
 
     if (contentType) {
       const contentTypetotal = await DB.countDocuments({
-        "inscription.contentType": contentType,
+        "inscription.contentType":
+          typeof contentType !== "string" ? { $in: contentType } : contentType,
       });
       total = contentTypetotal;
     } else {
@@ -38,13 +39,20 @@ const InscriptionhttpQuery = {
   getInscriptions: async (
     limit: number,
     offset: number,
-    contentType?: string
+    contentType?: string | string[]
   ) => {
     try {
       const DB = await GetDBTemplate();
 
       const Data = await DB.find(
-        !contentType ? {} : { "inscription.contentType": contentType }
+        !contentType
+          ? {}
+          : {
+              "inscription.contentType":
+                typeof contentType !== "string"
+                  ? { $in: contentType }
+                  : contentType,
+            }
       )
         .sort({ inscriptionNumber: -1 })
         .limit(limit)
