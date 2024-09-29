@@ -117,7 +117,8 @@ const BlockIndexer = async (
 
   const PreviousHash = DecodeBlockData[0].blockheader?.previousBlockHash!;
   const PreviousBlockNumber = startBlock - 1;
-  await ReOrgChecker({ hash: PreviousHash, height: PreviousBlockNumber });
+  if (PreviousBlockNumber > 0)
+    await ReOrgChecker({ hash: PreviousHash, height: PreviousBlockNumber });
 
   const BlockTransaction = await IndexBlockTransaction(DecodeBlockData);
 

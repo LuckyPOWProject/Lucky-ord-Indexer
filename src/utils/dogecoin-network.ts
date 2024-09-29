@@ -1,11 +1,11 @@
 export const dogecoinNetwork = {
-  messagePrefix: "\x19Dogecoin Signed Message:\n",
+  messagePrefix: "\x19Luckcoin Signed Message:\n",
   bech32: "bc",
   bip32: {
-    public: 0x02facafd,
-    private: 0x02fac398,
+    public: 0x0488b21e,
+    private: 0x0488ade4,
   },
-  pubKeyHash: 0x1e,
-  scriptHash: 0x16,
-  wif: 0x9e,
+  pubKeyHash: 47,
+  scriptHash: 5,
+  wif: 176,
 };
